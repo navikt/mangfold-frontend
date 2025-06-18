@@ -1,0 +1,66 @@
+.chart-toggle-wrapper {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.year-range-container {
+  margin-top: 1rem;
+}
+
+.year-range-label {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.year-range-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap; 
+}
+
+.year-slider {
+  flex: 1; 
+  min-width: 180px;
+  max-width: 100%;
+}
+
+.year-input {
+  width: 180px;
+  flex-shrink: 0; 
+}
+
+
+.gender-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+.gender-table th,
+.gender-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.gender-table tr:nth-child(even) {
+  background-color: #f7faf7; 
+}
+
+.gender-table tr:hover {
+  background-color: #e2e8f0;
+}

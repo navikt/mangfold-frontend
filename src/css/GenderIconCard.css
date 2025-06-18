@@ -1,0 +1,31 @@
+.gender-icon-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--a-shadow-medium);
+  flex: 1;
+  min-width: 250px;
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+.gender-figures {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.gender-icon-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.25rem;
+}
+
+.gender-percent {
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
