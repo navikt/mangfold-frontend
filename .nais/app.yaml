@@ -1,0 +1,25 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: nav-mangfold-frontend      
+  namespace: heda                   
+  labels:
+    team: heda
+spec:
+  image: {{ image }}           
+  port: 3000                      
+  ingresses:
+    - https://intern.dev.nav.no/mangfold
+  replicas:
+    min: 2
+    max: 4
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  liveness:
+    path: /
+    initialDelay: 20
+  readiness:
+    path: /
+    initialDelay: 20
