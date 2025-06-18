@@ -17,9 +17,10 @@ spec:
     requests:
       cpu: 500m
       memory: 512Mi
-  liveness:
-    path: /
-    initialDelay: 20
-  readiness:
-    path: /
-    initialDelay: 20
+  #Legger de senere når vi har de klærer
+  # liveness:
+  #  path: /
+   # initialDelay: 20
+  #readiness:
+   # path: /
+    #initialDelay: 20
