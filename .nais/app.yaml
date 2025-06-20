@@ -5,8 +5,7 @@ metadata:
   namespace: heda                   
   labels:
     team: heda
-spec:
-  image: {{ image }}           
+spec:       
   port: 3000                      
   ingresses:
     - https://intern.dev.nav.no/mangfold
