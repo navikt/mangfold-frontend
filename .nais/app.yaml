@@ -6,7 +6,7 @@ metadata:
   labels:
     team: heda
 spec:       
-  port: 3000                      
+  port: 8080                      
   ingresses:
     - https://mangfold.intern.dev.nav.no
   replicas:
