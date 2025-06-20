@@ -8,14 +8,18 @@ interface Props {
 
 export default function ChartTableView({ showTable, aggregatedData, yearRange }: Props) {
   if (aggregatedData.length === 0) {
-    return <p style={{ marginTop: "1rem" }}>Ingen data for perioden {yearRange[0]}–{yearRange[1]}.</p>;
+    return (
+      <p style={{ marginTop: "1rem" }}>
+        Ingen data for perioden {yearRange[0]}–{yearRange[1]}.
+      </p>
+    );
   }
 
   return showTable ? (
     <table className="gender-table">
       <thead>
         <tr>
-          <th>Avdeling</th>
+          <th>Kategori</th>
           <th>Kvinner (%)</th>
           <th>Menn (%)</th>
         </tr>
@@ -31,6 +35,9 @@ export default function ChartTableView({ showTable, aggregatedData, yearRange }:
       </tbody>
     </table>
   ) : (
-    <GenderBarChart title={`Data for ${yearRange[0]}–${yearRange[1]}`} data={aggregatedData} />
+    <GenderBarChart
+      title={`Data for ${yearRange[0]}–${yearRange[1]}`}
+      data={aggregatedData}
+    />
   );
 }

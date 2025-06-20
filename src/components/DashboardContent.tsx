@@ -1,11 +1,17 @@
+import { useState } from "react";
 import { BodyShort, Heading } from "@navikt/ds-react";
 import { genderData } from "../data/genderStats";
 import GenderIconCard from "./GenderIconCard";
+import "../css/GenderIconCard.css";
+import StatistikkPanel from "./StatistikkPanel";
+import FilterPanel from "./FilterPanel";
+import StatistikkExplorer from "./StatistikkExplorer";
 import "../css/ DashboardContent.css"
-import "../css/GenderIconCard.css"
-import StatistikkPanel from "./StatistikkPanel.tsx";
 
 export default function DashboardContent() {
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [selectedSection, setSelectedSection] = useState<string>("");
+
   return (
     <section className="dashboard-body">
       <Heading level="2" size="medium" spacing>
@@ -13,10 +19,8 @@ export default function DashboardContent() {
       </Heading>
 
       <BodyShort spacing>
-        Nav har en forpliktelse til å jobbe for mangfold og likestilling for
-        ansatte i etaten. Denne nettsiden er tiltenkt som et verktøy for å
-        spre bevissthet om mangfoldet for hele organisasjonen og samtidig gi
-        innsikt til videre arbeid med inkludering og representasjon.
+        Nav har en forpliktelse til å jobbe for mangfold og likestilling for ansatte i etaten. Denne nettsiden er tiltenkt som et verktøy for å
+        spre bevissthet om mangfoldet for hele organisasjonen og samtidig gi innsikt til videre arbeid med inkludering og representasjon.
       </BodyShort>
 
       <BodyShort spacing>
@@ -29,13 +33,27 @@ export default function DashboardContent() {
           malePercentage={genderData.total.male}
           femalePercentage={genderData.total.female}
         />
+      
         <GenderIconCard
           title="Kjønnsfordelingen totalt blant nyrekrutterte"
           malePercentage={genderData.newHires.male}
           femalePercentage={genderData.newHires.female}
         />
       </div>
-      <StatistikkPanel/>
+
+      <StatistikkPanel />
+
+      <FilterPanel
+        onFilterChange={({ departments, section }) => {
+          setSelectedDepartments(departments);
+          setSelectedSection(section);
+        }}
+      />
+
+      <StatistikkExplorer
+        selectedDepartments={selectedDepartments}
+        selectedSection={selectedSection}
+      />
     </section>
   );
 }
