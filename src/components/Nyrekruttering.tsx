@@ -1,5 +1,5 @@
 import StatistikkSideLayout from "../components/StatistikkSideLayout";
-import { nyrekrutteringData } from "../data/nyrekrutteringData";
+import { nyrekrutteringData } from "../data/NyrekrutteringData";
 
 export default function Nyrekruttering() {
     return (

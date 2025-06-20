@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@navikt/ds-react";
 import YearRangeFilter from "./YearRangeFilter";
 import SimpleLineChart from "./SimpleLineChart";
-import type { StatCategory, StatEntry } from "../data/nyrekrutteringData";
+import type { StatCategory, StatEntry} from "../data/NyrekrutteringData";
+
 import ChartTableView from "./ChartTableView";
 
 interface Props {
