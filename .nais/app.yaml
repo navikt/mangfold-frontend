@@ -14,8 +14,8 @@ spec:
     max: 4
   resources:
     requests:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 10m
+      memory: 32Mi
   #Legger de senere når vi har de klærer
   # liveness:
   #  path: /
