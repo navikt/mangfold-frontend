@@ -1,19 +1,10 @@
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-} from "recharts";
+//En enkel linjediagram-komponent for tidsserier.
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface Props {
     data: { år: string | number; menn: number; kvinner: number }[];
     title: string;
 }
-
 
 export default function SimpleLineChart({ data, title }: Props) {
     return (

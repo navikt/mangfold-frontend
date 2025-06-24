@@ -1,3 +1,4 @@
+//Aggregert kjønnsstatistikk med årvelger og tabell-/graf-visning.
 import { useState } from "react";
 import { Heading, Button } from "@navikt/ds-react";
 import { genderChartData } from "../data/genderStats";
@@ -30,7 +31,7 @@ export default function StatistikkPanel() {
   return (
     <div className="chart-toggle-wrapper">
       <Heading level="3" size="small" spacing>
-        Velg hvilket år eller årsperiode du vil se statistikk 
+        Velg hvilket år eller årsperiode du vil se statistikk
       </Heading>
 
       <div className="control-row" style={{ alignItems: "flex-end" }}>

@@ -1,9 +1,9 @@
+//Håndterer kategoribasert statistikk (alder, stillingsgruppe, osv.) med tabs og visning.
 import { useState } from "react";
 import { Button } from "@navikt/ds-react";
 import YearRangeFilter from "./YearRangeFilter";
 import SimpleLineChart from "./SimpleLineChart";
 import type { StatCategory, StatEntry} from "../data/NyrekrutteringData";
-
 import ChartTableView from "./ChartTableView";
 
 interface Props {
@@ -81,7 +81,6 @@ export default function StatistikkSideLayout({ title, description, data, yearRan
                     />
                 )}
             </div>
-
         </section>
     );
 }

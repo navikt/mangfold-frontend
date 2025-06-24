@@ -22,7 +22,6 @@ export default function YearRangeFilter({ yearRange, setYearRange }: Props) {
   }, [yearRange]);
 
   const handleManualInput = () => {
-    // Tillat både minus og lang bindestrek
     const match = inputValue.trim().match(/^(\d{4})\s*[-–]\s*(\d{4})$/);
     if (match) {
       const start = Math.max(MIN_YEAR, Math.min(MAX_YEAR, parseInt(match[1])));
@@ -35,37 +34,37 @@ export default function YearRangeFilter({ yearRange, setYearRange }: Props) {
   };
 
   return (
-  <div className="year-range-container">
-    <label className="year-range-label">Velg periode:</label>
-  
-    <div className="year-range-controls">
+    <div className="year-range-container">
+      <label className="year-range-label">Velg periode:</label>
+
+      <div className="year-range-controls">
         <Slider
-        range
-        min={MIN_YEAR}
-        max={MAX_YEAR}
-        value={yearRange}
-        onChange={(val) => {
+          range
+          min={MIN_YEAR}
+          max={MAX_YEAR}
+          value={yearRange}
+          onChange={(val) => {
             if (Array.isArray(val)) setYearRange([val[0], val[1]]);
-        }}
-        marks={{ [MIN_YEAR]: `${MIN_YEAR}`, [MAX_YEAR]: `${MAX_YEAR}` }}
-        allowCross={false}
-        className="year-slider"
+          }}
+          marks={{ [MIN_YEAR]: `${MIN_YEAR}`, [MAX_YEAR]: `${MAX_YEAR}` }}
+          allowCross={false}
+          className="year-slider"
         />
 
         <TextField
-        label="Årsintervall"
-        hideLabel
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onBlur={handleManualInput}
-        onKeyDown={(e) => {
+          label="Årsintervall"
+          hideLabel
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onBlur={handleManualInput}
+          onKeyDown={(e) => {
             if (e.key === "Enter") handleManualInput();
-        }}
-        placeholder="f.eks. 2020–2023"
-        error={error}
-        className="year-input"
+          }}
+          placeholder="f.eks. 2020–2023"
+          error={error}
+          className="year-input"
         />
+      </div>
     </div>
-  </div>
   );
 }

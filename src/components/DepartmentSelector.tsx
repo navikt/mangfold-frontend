@@ -1,6 +1,6 @@
+// Komponent for å velge én eller flere avdelinger.
 import "../css/DepartmentSelector.css";
 import { departments } from "../data/departmentData";
-
 
 interface Props {
   selected: string[];
@@ -20,7 +20,7 @@ export default function DepartmentSelector({ selected, setSelected }: Props) {
     <div className="department-selector">
 
       <label className="department-label">
-     For nærmere detaljer for velg avdeling:
+        For nærmere detaljer for velg avdeling:
       </label>
       <div className="checkbox-grid">
         {departments.map((dept) => (

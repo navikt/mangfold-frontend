@@ -1,16 +1,12 @@
-import { useState } from "react";
 import { BodyShort, Heading } from "@navikt/ds-react";
 import { genderData } from "../data/genderStats";
 import GenderIconCard from "./GenderIconCard";
 import "../css/GenderIconCard.css";
 import StatistikkPanel from "./StatistikkPanel";
-import FilterPanel from "./FilterPanel";
 import StatistikkExplorer from "./StatistikkExplorer";
 import "../css/ DashboardContent.css"
 
 export default function DashboardContent() {
-  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [selectedSection, setSelectedSection] = useState<string>("");
 
   return (
     <section className="dashboard-body">
@@ -33,7 +29,7 @@ export default function DashboardContent() {
           malePercentage={genderData.total.male}
           femalePercentage={genderData.total.female}
         />
-      
+
         <GenderIconCard
           title="Kjønnsfordelingen totalt blant nyrekrutterte"
           malePercentage={genderData.newHires.male}
@@ -43,17 +39,11 @@ export default function DashboardContent() {
 
       <StatistikkPanel />
 
-      <FilterPanel
-        onFilterChange={({ departments, section }) => {
-          setSelectedDepartments(departments);
-          setSelectedSection(section);
-        }}
-      />
+      <hr className="section-divider" />
+     
 
-      <StatistikkExplorer
-        selectedDepartments={selectedDepartments}
-        selectedSection={selectedSection}
-      />
+      <StatistikkExplorer />
+
     </section>
   );
 }

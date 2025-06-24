@@ -1,3 +1,4 @@
+//Viser ikon med prosentandel kvinner og menn.
 import { Label } from "@navikt/ds-react";
 import { FaFemale, FaMale } from "react-icons/fa";
 import "../css/GenderIconCard.css";

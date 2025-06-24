@@ -1,3 +1,4 @@
+// Viser kjønnsfordeling som stolpediagram.
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Heading } from "@navikt/ds-react";
 

@@ -1,0 +1,10 @@
+.tooltip-box {
+  background-color: #1e293b;
+  color: white;
+  padding: 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  max-width: 280px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
+}
