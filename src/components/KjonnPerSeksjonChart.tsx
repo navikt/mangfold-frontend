@@ -215,12 +215,16 @@ export default function KjonnPerSeksjonChart() {
                             <Bar
                                 dataKey="unknown"
                                 stackId="a"
-                                fill="#d1d5db"
+                                fill="#999b9d"
                                 name="Ukjent"
                                 fillOpacity={hoveredCategory === null || hoveredCategory === "unknown" ? 1 : 0.3}
                             />
                         </BarChart>
                     </ResponsiveContainer>
+
+                    <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#334155", marginTop: "0.5rem" }}>
+                        Andel kvinner (hover for antall)
+                    </p>
                 </>
             )}
         </div>

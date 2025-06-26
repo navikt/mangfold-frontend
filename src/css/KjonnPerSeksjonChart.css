@@ -31,7 +31,7 @@
 }
 
 .dot-unknown {
-  background-color: #d1d5db;
+  background-color: #999b9d;
 }
 
 .view-toggle {
@@ -82,4 +82,31 @@
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+.legend-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.dot-under35 {
+  background-color: #32bf66;
+}
+.dot-age35to50 {
+   background-color: #208444;
+}
+.dot-over50 {
+  background-color: #0e4d1b;
+}
+.dot-unknown {
+  background-color: #999b9d;
 }

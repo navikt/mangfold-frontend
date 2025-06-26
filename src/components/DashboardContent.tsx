@@ -11,7 +11,7 @@ export default function DashboardContent() {
   return (
     <section className="dashboard-body">
       <Heading level="2" size="medium" spacing>
-        Mangfold og likestilling i etaten
+        Mangfold og likestilling i Direktoratet
       </Heading>
 
       <BodyShort spacing>
@@ -40,7 +40,6 @@ export default function DashboardContent() {
       <StatistikkPanel />
 
       <hr className="section-divider" />
-     
 
       <StatistikkExplorer />
 

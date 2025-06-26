@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Heading,Button,Select,Checkbox} from "@navikt/ds-react";
 import KjonnPerSeksjonChart from "./KjonnPerSeksjonChart";
+import AlderPerSeksjonChart from "./AlderPerSeksjonChart";
 import { BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend,
 } from "recharts";
 
@@ -43,6 +44,11 @@ export default function StatistikkExplorer() {
       <KjonnPerSeksjonChart />
 
       <hr className="section-divider" />
+      
+      <AlderPerSeksjonChart />
+
+      <hr className="section-divider" />
+
       <Heading level="2" size="medium" spacing>
         Fordeling etter kategori
       </Heading>
