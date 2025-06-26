@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Heading,Button,Select,Checkbox} from "@navikt/ds-react";
 import KjonnPerSeksjonChart from "./KjonnPerSeksjonChart";
-import { BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend} from "recharts";
+import { BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend,
+} from "recharts";
+
 import "../css/ChartToggleView.css";
 import { kjonnData } from "../data/kjonnData";
 import { statisticsData } from "../data/StatistikkData";
 import type { StatCategory, StatEntry } from "../data/StatistikkData";
 
 const CATEGORY_LABELS: { key: StatCategory; label: string }[] = [
-  { key: "alder", label: "Alder" },
   { key: "ansiennitet", label: "Ansiennitet" },
   { key: "lederniva", label: "Ledernivå" },
   { key: "stillingsgruppe", label: "Stillingsgruppe" },
@@ -27,7 +28,7 @@ const sectionOptionsByDepartment: Record<string, string[]> = Array.from(
 }, {} as Record<string, string[]>);
 
 export default function StatistikkExplorer() {
-  const [selectedCategory, setSelectedCategory] = useState<StatCategory>("alder");
+  const [selectedCategory, setSelectedCategory] = useState<StatCategory>("ansiennitet");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
 
