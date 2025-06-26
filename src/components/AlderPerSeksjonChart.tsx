@@ -119,7 +119,7 @@ export default function AlderPerSeksjonChart() {
     return (
         <div>
             <Heading level="2" size="medium" spacing>
-                Aldersfordeling per seksjon
+                Aldersfordeling etter seksjon, rolle eller avdeling
             </Heading>
 
             <div className="view-toggle">
@@ -140,7 +140,22 @@ export default function AlderPerSeksjonChart() {
                     />
                     Se på roller
                 </label>
+
+                {activeView && (
+                    <button
+                        type="button"
+                        className="reset-button"
+                        onClick={() => {
+                            setActiveView(null);
+                            setSelectedDepartments([]);
+                        }}
+                        style={{ marginLeft: "1rem" }}
+                    >
+                        Nullstill
+                    </button>
+                )}
             </div>
+
 
             {activeView && (
                 <>

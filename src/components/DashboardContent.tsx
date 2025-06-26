@@ -25,7 +25,7 @@ export default function DashboardContent() {
 
       <div className="card-container">
         <GenderIconCard
-          title="Kjønnsfordelingen totalt i etaten"
+          title="Kjønnsfordelingen totalt i Direktoratet"
           malePercentage={genderData.total.male}
           femalePercentage={genderData.total.female}
         />
@@ -37,12 +37,13 @@ export default function DashboardContent() {
         />
       </div>
 
-      <StatistikkPanel />
+      <div className="chart-section">
+        <StatistikkPanel />
+      </div>
 
-      <hr className="section-divider" />
-
-      <StatistikkExplorer />
-
+      <div className="chart-section">
+        <StatistikkExplorer />
+      </div>
     </section>
   );
 }

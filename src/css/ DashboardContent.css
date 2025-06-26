@@ -1,6 +1,5 @@
 .dashboard-body {
   padding: 2rem;
-  background-color: var(--a-gray-100);
 }
 
 .card-container {
@@ -26,9 +25,22 @@
   font-size: 1.25rem;
   font-weight: 500;
 }
+
 .section-divider {
   margin: 10rem 0;
   border: none;
   border-top: 4px solid #000000;
 }
 
+.chart-section {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+}
+
+.chart-section {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+  padding-bottom: 10rem;
+  border-bottom: 3px solid #88898a; 
+
+}

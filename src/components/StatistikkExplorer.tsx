@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Heading,Button,Select,Checkbox} from "@navikt/ds-react";
+import { Heading, Button, Select, Checkbox } from "@navikt/ds-react";
 import KjonnPerSeksjonChart from "./KjonnPerSeksjonChart";
 import AlderPerSeksjonChart from "./AlderPerSeksjonChart";
-import { BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend,
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
 import "../css/ChartToggleView.css";
@@ -41,21 +42,19 @@ export default function StatistikkExplorer() {
 
   return (
     <div className="chart-toggle-wrapper">
-      <KjonnPerSeksjonChart />
+      <div className="chart-section">
+        <KjonnPerSeksjonChart />
+      </div>
 
-      <hr className="section-divider" />
-      
-      <AlderPerSeksjonChart />
+      <div className="chart-section">
+        <AlderPerSeksjonChart />
+      </div>
 
-      <hr className="section-divider" />
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem" }}>
+        <Heading level="2" size="medium" spacing>
+          Fordeling etter kategori
+        </Heading>
 
-      <Heading level="2" size="medium" spacing>
-        Fordeling etter kategori
-      </Heading>
-
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem" }}
-      >
         <Select
           label="Velg avdeling"
           id="department-select"
@@ -76,15 +75,22 @@ export default function StatistikkExplorer() {
 
         {selectedDepartment && sectionOptionsByDepartment[selectedDepartment] && (
           <div>
-            <Heading level="3" size="small">Seksjoner</Heading>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "1rem",
-                marginTop: "0.5rem",
-              }}
-            >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+              <Heading level="3" size="small">Seksjoner</Heading>
+              <Button
+                variant="tertiary"
+                size="small"
+                onClick={() => {
+                  setSelectedDepartment("");
+                  setSelectedSections([]);
+                  setSelectedCategory("ansiennitet");
+                }}
+              >
+                Nullstill
+              </Button>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
               {sectionOptionsByDepartment[selectedDepartment].map((section) => (
                 <Checkbox
                   key={section}
