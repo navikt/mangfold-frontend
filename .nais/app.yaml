@@ -9,6 +9,7 @@ spec:
   port: 8080                      
   ingresses:
     - https://mangfold.intern.dev.nav.no
+    - https://mangfold.ansatt.dev.nav.no
   replicas:
     min: 2
     max: 4
