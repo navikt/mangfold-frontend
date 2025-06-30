@@ -60,7 +60,7 @@ export default function GenderBarChart({ /*title*/ data }: GenderBarChartProps) 
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
           <XAxis dataKey="label" />
-          <YAxis domain={[0, 50]} unit="%" />
+          <YAxis domain={[0, 100]} unit="%" />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
           <Bar dataKey="female" fill="#38a169" name="Andel kvinner" />

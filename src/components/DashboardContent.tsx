@@ -1,5 +1,4 @@
 import { BodyShort, Heading } from "@navikt/ds-react";
-import { genderData } from "../data/genderStats";
 import GenderIconCard from "./GenderIconCard";
 import "../css/GenderIconCard.css";
 import StatistikkPanel from "./StatistikkPanel";
@@ -26,14 +25,20 @@ export default function DashboardContent() {
       <div className="card-container">
         <GenderIconCard
           title="Kjønnsfordelingen totalt i Direktoratet"
-          malePercentage={genderData.total.male}
-          femalePercentage={genderData.total.female}
+          femalePercentage={33}
+          malePercentage={67}
+          femaleCount={198}
+          maleCount={402}
+          mode="prosent"
         />
 
         <GenderIconCard
-          title="Kjønnsfordelingen totalt blant nyrekrutterte"
-          malePercentage={genderData.newHires.male}
-          femalePercentage={genderData.newHires.female}
+          title="Kjønnsfordelingen totalt i antall"
+          femalePercentage={33}
+          malePercentage={67}
+          femaleCount={198}
+          maleCount={402}
+          mode="antall"
         />
       </div>
 
