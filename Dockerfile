@@ -1,5 +1,5 @@
 # build frontend and server
-FROM library/node:lts-alpine3.20 as build
+FROM library/node:lts-alpine3.20 AS build
 WORKDIR /.
 COPY package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts ./
 RUN npm ci
