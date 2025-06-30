@@ -67,7 +67,7 @@ function CustomTooltip({ active, payload, label }: any) {
     );
 
     return (
-        <div style={{ backgroundColor: "#1f2937", color: "white", padding: "0.75rem 1rem", borderRadius: "0.5rem", boxShadow: "0px 2px 10px rgba(0,0,0,0.4)", fontSize: "0.9rem", maxWidth: "300px" }}>
+        <div style={{ backgroundColor: "#2d3748", color: "white", padding: "0.75rem 1rem", borderRadius: "0.5rem", boxShadow: "0px 2px 10px rgba(0,0,0,0.4)", fontSize: "0.9rem", maxWidth: "300px" }}>
             <div style={{ fontWeight: "600", marginBottom: "0.5rem", textTransform: "uppercase" }}>{label}</div>
             <Row color="#32bf66" label="35 og under" value={entry.under35Count} percent={entry.under35Percent} />
             <Row color="#208444" label="35–50" value={entry.age35to50Count} percent={entry.age35to50Percent} />

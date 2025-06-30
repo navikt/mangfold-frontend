@@ -63,7 +63,7 @@ function CustomTooltip({ active, payload, label }: any) {
 
     return (
         <div style={{
-            backgroundColor: "#1f2937",
+            backgroundColor: "#2d3748",
             color: "white",
             padding: "0.75rem 1rem",
             borderRadius: "0.5rem",
@@ -73,7 +73,7 @@ function CustomTooltip({ active, payload, label }: any) {
         }}>
             <div style={{ fontWeight: "600", marginBottom: "0.5rem", textTransform: "uppercase" }}>{label}</div>
 
-            <Row color="#22c55e" label="Kvinne" value={entry.femaleCount} percent={entry.female} />
+            <Row color="#38a169" label="Kvinne" value={entry.femaleCount} percent={entry.female} />
             <Row color="#1e293b" label="Mann" value={entry.maleCount} percent={entry.male} />
             <Row color="#d1d5db" label="Ukjent" value={entry.unknownCount} percent={entry.unknown} />
 
@@ -215,7 +215,7 @@ export default function KjonnPerSeksjonChart() {
                             <Bar
                                 dataKey="female"
                                 stackId="a"
-                                fill="#22c55e"
+                                fill="#38a169"
                                 name="Kvinner"
                                 fillOpacity={hoveredCategory === null || hoveredCategory === "female" ? 1 : 0.3}
                             />

@@ -1,11 +1,8 @@
 import { useState } from "react";
-import { Heading, Button, Select, Checkbox } from "@navikt/ds-react";
+import { Heading, Button, Select, Checkbox, Tooltip } from "@navikt/ds-react";
 import KjonnPerSeksjonChart from "./KjonnPerSeksjonChart";
 import AlderPerSeksjonChart from "./AlderPerSeksjonChart";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-} from "recharts";
-
+import StatBarChart from "./StatBarChart";
 import "../css/ChartToggleView.css";
 import { kjonnData } from "../data/kjonnData";
 import { statisticsData } from "../data/StatistikkData";
@@ -34,10 +31,7 @@ export default function StatistikkExplorer() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
 
-  const departmentOptions = Array.from(
-    new Set(kjonnData.map((d) => d.department))
-  );
-
+  const departmentOptions = Array.from(new Set(kjonnData.map((d) => d.department)));
   const categoryData: StatEntry[] = statisticsData[selectedCategory];
 
   return (
@@ -75,7 +69,14 @@ export default function StatistikkExplorer() {
 
         {selectedDepartment && sectionOptionsByDepartment[selectedDepartment] && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "0.5rem",
+              }}
+            >
               <Heading level="3" size="small">Seksjoner</Heading>
               <Button
                 variant="tertiary"
@@ -111,32 +112,49 @@ export default function StatistikkExplorer() {
         )}
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          {CATEGORY_LABELS.map((cat) => (
-            <Button
-              key={cat.key}
-              onClick={() => setSelectedCategory(cat.key)}
-              variant={selectedCategory === cat.key ? "primary" : "tertiary"}
-              size="small"
-            >
-              {cat.label}
-            </Button>
-          ))}
+          {CATEGORY_LABELS.map((cat) => {
+            const isDisabled = cat.key === "utdanningsniva";
+
+            if (isDisabled) {
+              return (
+                <Tooltip
+                  key={cat.key}
+                  content="Denne kategorien er deaktivert fordi vi mangler data."
+                >
+                  <span
+                    style={{
+                      display: "inline-block",
+                      border: "2px solid #0067C5",
+                      borderRadius: "0.375rem",
+                      padding: "0.375rem 0.75rem",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      color: "#0067C5",
+                      cursor: "not-allowed",
+                      backgroundColor: "#f9fafb",
+                    }}
+                  >
+                    {cat.label}
+                  </span>
+                </Tooltip>
+              );
+            }
+
+            return (
+              <Button
+                key={cat.key}
+                onClick={() => setSelectedCategory(cat.key)}
+                variant={selectedCategory === cat.key ? "primary" : "tertiary"}
+                size="small"
+              >
+                {cat.label}
+              </Button>
+            );
+          })}
         </div>
       </div>
+      <StatBarChart data={categoryData} />
 
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={categoryData}
-          margin={{ top: 20, right: 30, bottom: 20, left: 0 }}
-        >
-          <XAxis dataKey="label" />
-          <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="female" fill="#22c55e" name="Kvinner" />
-          <Bar dataKey="male" fill="#1e293b" name="Menn" />
-        </BarChart>
-      </ResponsiveContainer>
     </div>
   );
 }
