@@ -1,8 +1,6 @@
-// Aggregert kjønnsstatistikk for 2025, med tabell-/graf-visning.
 import { useState } from "react";
 import { Heading, Button } from "@navikt/ds-react";
 import { genderChartData } from "../data/genderStats";
-// import YearRangeFilter from "./YearRangeFilter"; // Kommentar: fjernet fordi vi kun viser ett år
 import ChartTableView from "./ChartTableView";
 
 const aggregateDataForRange = (start: number, end: number, data: any) => {
@@ -40,6 +38,13 @@ export default function StatistikkPanel() {
         Oversikt over kvinner og menn i hver avdeling – {yearRange[0]}
       </Heading>
 
+      <p>
+        Her kan du se kjønnsfordelingen i hver avdeling basert på data fra inneværende år.
+        Oversikten viser hvor mange kvinner og menn som jobber i hver avdeling – både som prosentandel og i antall personer.
+        Dette gir et tydelig bilde av hvordan kjønnsbalansen fordeler seg på tvers av virksomheten akkurat nå, og kan brukes som
+        grunnlag for videre arbeid med likestilling og mangfold.
+      </p>
+
       <div className="control-row" style={{ alignItems: "flex-end" }}>
         {/* <YearRangeFilter yearRange={yearRange} setYearRange={setYearRange} /> */}
         <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
@@ -49,5 +54,6 @@ export default function StatistikkPanel() {
 
       <ChartTableView showTable={showTable} aggregatedData={aggregatedData} yearRange={yearRange} />
     </div>
+
   );
 }

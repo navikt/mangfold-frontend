@@ -119,7 +119,7 @@ export default function AlderPerSeksjonChart() {
     return (
         <div>
             <Heading level="2" size="medium" spacing>
-                Aldersfordeling etter seksjon, rolle eller avdeling
+                Aldersfordeling etter rolle eller avdeling
             </Heading>
 
             <div className="view-toggle">
@@ -127,7 +127,23 @@ export default function AlderPerSeksjonChart() {
                     <input
                         type="checkbox"
                         checked={activeView === "department"}
-                        onChange={() => setActiveView(activeView === "department" ? null : "department")}
+                        onChange={() => {
+                            if (activeView === "department") {
+                                setActiveView(null);
+                                setSelectedDepartments([]);
+                            } else {
+                                setActiveView("department");
+                                if (selectedDepartments.length === 0) {
+                                    const arbeidsavdeling = alderData.find(entry => entry.department === "Arbeidsavdeling");
+                                    if (arbeidsavdeling) {
+                                        setSelectedDepartments(["Arbeidsavdeling"]);
+                                    } else {
+                                        const firstDept = alderData.find(entry => entry.department)?.department;
+                                        if (firstDept) setSelectedDepartments([firstDept]);
+                                    }
+                                }
+                            }
+                        }}
                     />
                     Se på avdeling
                 </label>
@@ -156,6 +172,19 @@ export default function AlderPerSeksjonChart() {
                 )}
             </div>
 
+            <div className="view-toggle">
+                {activeView === "department" && (
+                    <p style={{ marginBottom: "1rem" }}>
+                        Her kan du se aldersfordelingen i hver seksjon, filtrert etter hvilken avdeling de tilhører. Du kan velge én eller flere avdelinger for å få en detaljert oversikt over hvordan kvinner og menn fordeler seg i seksjonene under disse.
+                    </p>
+                )}
+
+                {activeView === "role" && (
+                    <p style={{ marginBottom: "1rem" }}>
+                        Her ser du aldersfordelingen fordelt på roller uavhengig av avdeling. Dette gir et helhetlig bilde av kjønnsbalansen i ulike stillingstyper.
+                    </p>
+                )}
+            </div>
 
             {activeView && (
                 <>

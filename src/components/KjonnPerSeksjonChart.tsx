@@ -95,13 +95,13 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function KjonnPerSeksjonChart() {
     const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
     const [hoveredCategory, setHoveredCategory] = useState<"female" | "male" | "unknown" | null>(null);
-    const [activeView, setActiveView] = useState<"department" | "role" | null>("department");
+    const [activeView, setActiveView] = useState<"department" | "role" | null>(null);
 
     const baseData: DataEntry[] = activeView === "role" ? roleData : kjonnData;
 
     const filteredData: DataEntry[] = baseData.filter((entry) => {
         if (activeView === "department") {
-            return selectedDepartments.length === 0 || selectedDepartments.includes(entry.department || "");
+            return selectedDepartments.length > 0 && selectedDepartments.includes(entry.department || "");
         }
         return true;
     });
@@ -132,7 +132,23 @@ export default function KjonnPerSeksjonChart() {
                     <input
                         type="checkbox"
                         checked={activeView === "department"}
-                        onChange={() => setActiveView(activeView === "department" ? null : "department")}
+                        onChange={() => {
+                            if (activeView === "department") {
+                                setActiveView(null);
+                                setSelectedDepartments([]);
+                            } else {
+                                setActiveView("department");
+                                if (selectedDepartments.length === 0) {
+                                    const arbeidsavdeling = kjonnData.find(entry => entry.department === "Arbeidsavdeling");
+                                    if (arbeidsavdeling) {
+                                        setSelectedDepartments(["Arbeidsavdeling"]);
+                                    } else {
+                                        const firstDept = kjonnData.find(entry => entry.department)?.department;
+                                        if (firstDept) setSelectedDepartments([firstDept]);
+                                    }
+                                }
+                            }
+                        }}
                     />
                     Se på avdeling
                 </label>
@@ -158,6 +174,20 @@ export default function KjonnPerSeksjonChart() {
                     >
                         Nullstill
                     </button>
+                )}
+            </div>
+
+            <div className="view-toggle">
+                {activeView === "department" && (
+                    <p style={{ marginBottom: "1rem" }}>
+                        Her kan du se kjønnsfordelingen i hver seksjon, filtrert etter hvilken avdeling de tilhører. Du kan velge én eller flere avdelinger for å få en detaljert oversikt over hvordan kvinner og menn fordeler seg i seksjonene under disse.
+                    </p>
+                )}
+
+                {activeView === "role" && (
+                    <p style={{ marginBottom: "1rem" }}>
+                        Her ser du kjønnsfordelingen fordelt på roller uavhengig av avdeling. Dette gir et helhetlig bilde av kjønnsbalansen i ulike stillingstyper.
+                    </p>
                 )}
             </div>
 
