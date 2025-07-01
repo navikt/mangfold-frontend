@@ -4,8 +4,9 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "../css/ChartToggleView.css";
 
-const MIN_YEAR = 2018;
-const MAX_YEAR = 2025;
+const currentYear = new Date().getFullYear();
+const MIN_YEAR = currentYear - 10;
+const MAX_YEAR = currentYear;
 
 interface Props {
   yearRange: [number, number];

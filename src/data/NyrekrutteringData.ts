@@ -5,9 +5,11 @@ export type StatCategory =
     | "utdanningsniva";
 
 export interface StatEntry {
-    label: string;       
+    label: string;
     female: number;
     male: number;
+    femaleCount?: number; 
+    maleCount?: number;
 }
 
 export const nyrekrutteringData: Record<StatCategory, StatEntry[]> = {
