@@ -9,25 +9,25 @@ const MIN_YEAR = currentYear - 10;
 const MAX_YEAR = currentYear;
 
 interface Props {
-  yearRange: [number, number];
-  setYearRange: (range: [number, number]) => void;
+  year: [number, number];
+  setyear: (range: [number, number]) => void;
 }
 
-export default function YearRangeFilter({ yearRange, setYearRange }: Props) {
-  const [inputValue, setInputValue] = useState(`${yearRange[0]}–${yearRange[1]}`);
+export default function yearFilter({ year, setyear }: Props) {
+  const [inputValue, setInputValue] = useState(`${year[0]}–${year[1]}`);
   const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    setInputValue(`${yearRange[0]}–${yearRange[1]}`);
+    setInputValue(`${year[0]}–${year[1]}`);
     setError(undefined);
-  }, [yearRange]);
+  }, [year]);
 
   const handleManualInput = () => {
     const match = inputValue.trim().match(/^(\d{4})\s*[-–]\s*(\d{4})$/);
     if (match) {
       const start = Math.max(MIN_YEAR, Math.min(MAX_YEAR, parseInt(match[1])));
       const end = Math.max(start, Math.min(MAX_YEAR, parseInt(match[2])));
-      setYearRange([start, end]);
+      setyear([start, end]);
       setError(undefined);
     } else {
       setError("Skriv et gyldig intervall, f.eks. 2020–2023");
@@ -43,9 +43,9 @@ export default function YearRangeFilter({ yearRange, setYearRange }: Props) {
           range
           min={MIN_YEAR}
           max={MAX_YEAR}
-          value={yearRange}
+          value={year}
           onChange={(val) => {
-            if (Array.isArray(val)) setYearRange([val[0], val[1]]);
+            if (Array.isArray(val)) setyear([val[0], val[1]]);
           }}
           marks={{ [MIN_YEAR]: `${MIN_YEAR}`, [MAX_YEAR]: `${MAX_YEAR}` }}
           allowCross={false}

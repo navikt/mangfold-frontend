@@ -165,7 +165,7 @@ export default function StatistikkSideLayout({
           <ChartTableView
             showTable={true}
             aggregatedData={filteredData}
-            yearRange={[selectedYear, selectedYear]}
+            year={[selectedYear, selectedYear]}
           />
         ) : (
           <StatBarChart data={filteredData} />

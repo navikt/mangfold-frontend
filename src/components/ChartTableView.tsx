@@ -9,17 +9,16 @@ interface Props {
     femaleCount?: number;
     maleCount?: number;
   }[];
-  yearRange: [number, number];
 }
 
-export default function ChartTableView({ showTable, aggregatedData, yearRange }: Props) {
-  if (aggregatedData.length === 0) {
-    return (
-      <p style={{ marginTop: "1rem" }}>
-        Ingen data for perioden {yearRange[0]}–{yearRange[1]}.
-      </p>
-    );
-  }
+export default function ChartTableView({ showTable, aggregatedData}: Props) {
+  // if (aggregatedData.length === 0) {
+  //   return (
+  //     <p style={{ marginTop: "1rem" }}>
+  //       Ingen data for perioden {year[0]}–{year[1]}.
+  //     </p>
+  //   );
+  // }
 
   return showTable ? (
     <table className="gender-table">
@@ -52,7 +51,7 @@ export default function ChartTableView({ showTable, aggregatedData, yearRange }:
     </table>
   ) : (
     <GenderBarChart
-      //title={`Data for ${yearRange[0]}–${yearRange[1]}`}
+      //title={`Data for ${year[0]}–${yearRange[1]}`}
       data={aggregatedData}
     />
   );
