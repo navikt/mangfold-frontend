@@ -17,7 +17,9 @@ type AggregatedAvdeling = {
   femaleCount: number;
 };
 export default function StatistikkPanel() {
-  const yearRange: [number, number] = [2025, 2025]; // Kan tilpasses ved behov
+  const [selectedYear] = useState(new Date().getFullYear());
+  const yearRange: [number, number] = [selectedYear, selectedYear];
+  
   const [showTable, setShowTable] = useState(false);
   const [aggregatedData, setAggregatedData] = useState<AggregatedAvdeling[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ export default function StatistikkPanel() {
         const res = await fetch("http://mangfold-backend.intern.nav.no/kjonn-per-avdeling");
         if (!res.ok) throw new Error("Kunne ikke hente kjønnsdata for avdelinger");
         const data: ApiAvdeling[] = await res.json();
-        // Gjør om til ønsket format:
+
         const aggregated = data.map((entry) => {
           const femaleCount = entry.kjonnAntall.kvinne ?? 0;
           const maleCount = entry.kjonnAntall.mann ?? 0;
@@ -73,7 +75,7 @@ export default function StatistikkPanel() {
       ) : error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
-        <ChartTableView showTable={showTable} aggregatedData={aggregatedData}/>
+        <ChartTableView showTable={showTable} aggregatedData={aggregatedData} />
       )}
     </div>
   );
