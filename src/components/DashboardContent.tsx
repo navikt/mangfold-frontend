@@ -4,8 +4,29 @@ import "../css/GenderIconCard.css";
 import StatistikkPanel from "./StatistikkPanel";
 import StatistikkExplorer from "./StatistikkExplorer";
 import "../css/ DashboardContent.css"
+import { useEffect, useState } from "react";
 
+type KjønnStatistikk = {
+  kjonn: "kvinne" | "mann";
+  antall: number;
+};
 export default function DashboardContent() {
+  const [statistikk, setStatistikk] = useState<KjønnStatistikk[] | null>(null);
+  useEffect(() => {
+    async function fetchStatistikk() {
+      const res = await fetch("https://mangfold-backend.intern.nav.no/kjonn-statistikk");
+      const data: KjønnStatistikk[] = await res.json();
+      setStatistikk(data);
+    }
+    fetchStatistikk();
+  }, []);
+
+  // Finn antall og prosent
+  const femaleCount = statistikk?.find((s) => s.kjonn === "kvinne")?.antall ?? 0;
+  const maleCount = statistikk?.find((s) => s.kjonn === "mann")?.antall ?? 0;
+  const total = femaleCount + maleCount;
+  const femalePercentage = total ? Math.round((femaleCount / total) * 100) : 0;
+  const malePercentage = total ? Math.round((maleCount / total) * 100) : 0;
 
   return (
     <section className="dashboard-body">
@@ -25,26 +46,21 @@ export default function DashboardContent() {
       <div className="card-container">
         <GenderIconCard
           title="Kjønnsfordelingen totalt i Direktoratet"
-          femalePercentage={33}
-          malePercentage={67}
-          femaleCount={198}
-          maleCount={402}
+          female={femalePercentage}
+          male={malePercentage}
           mode="prosent"
         />
 
         <GenderIconCard
           title="Kjønnsfordelingen totalt i antall"
-          femalePercentage={33}
-          malePercentage={67}
-          femaleCount={198}
-          maleCount={402}
+          female={femaleCount}
+          male={maleCount}
           mode="antall"
         />
       </div>
       <StatistikkPanel />
 
       <StatistikkExplorer />
-      
     </section>
   );
 }
