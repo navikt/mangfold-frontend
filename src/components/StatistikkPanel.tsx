@@ -29,7 +29,7 @@ export default function StatistikkPanel() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("http://mangfold-backend.intern.nav.no/kjonn-per-avdeling");
+        const res = await fetch("https://mangfold-backend.intern.nav.no/kjonn-per-avdeling");
         if (!res.ok) throw new Error("Kunne ikke hente kjønnsdata for avdelinger");
         const data: ApiAvdeling[] = await res.json();
 
