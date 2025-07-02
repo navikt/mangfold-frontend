@@ -1,4 +1,3 @@
-// Komponent for å velge én eller flere avdelinger.
 import "../css/DepartmentSelector.css";
 import { departments } from "../data/departmentData";
 
@@ -8,27 +7,21 @@ interface Props {
 }
 
 export default function DepartmentSelector({ selected, setSelected }: Props) {
-  const toggleDepartment = (dept: string) => {
-    if (selected.includes(dept)) {
-      setSelected(selected.filter((d) => d !== dept));
-    } else {
-      setSelected([...selected, dept]);
-    }
+  const handleSelect = (dept: string) => {
+    setSelected([dept]);
   };
 
   return (
     <div className="department-selector">
-
-      <label className="department-label">
-        For nærmere detaljer for velg avdeling:
-      </label>
+      <label className="department-label">Velg én avdeling:</label>
       <div className="checkbox-grid">
         {departments.map((dept) => (
           <label key={dept.name} className="checkbox-item">
             <input
-              type="checkbox"
+              type="radio"
+              name="department"
               checked={selected.includes(dept.name)}
-              onChange={() => toggleDepartment(dept.name)}
+              onChange={() => handleSelect(dept.name)}
             />
             {dept.name}
           </label>

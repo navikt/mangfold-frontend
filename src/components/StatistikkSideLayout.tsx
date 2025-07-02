@@ -28,12 +28,14 @@ export default function StatistikkSideLayout({
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showTable, setShowTable] = useState(false);
 
+
   const filteredData = data[selectedCategory].filter((entry) => {
     if (selectedCategory === "Totalt oversikt") {
       return entry.label === selectedYear.toString();
     }
     return true;
   });
+
 
   const descriptionsNyrekruttering: Record<StatCategory, string> = {
     "Totalt oversikt":
@@ -169,6 +171,12 @@ export default function StatistikkSideLayout({
           <StatBarChart data={filteredData} />
         )}
       </div>
+
+      {selectedCategory === "alder" && (
+        <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#334155", marginTop: "0.5rem" }}>
+          Aldersgruppene er aggregert for å gjøre fordelingen tydeligere ({selectedYear})
+        </p>
+      )}
     </section>
   );
 }

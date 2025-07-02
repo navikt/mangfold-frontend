@@ -12,8 +12,10 @@ interface StatEntry {
     label: string;
     female: number;
     male: number;
+    unknown?: number;
     femaleCount?: number;
     maleCount?: number;
+    unknownCount?: number;
 }
 
 interface StatBarChartProps {
@@ -24,6 +26,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length >= 2) {
         const female = payload.find((p: any) => p.dataKey === "female");
         const male = payload.find((p: any) => p.dataKey === "male");
+        const unknown = payload.find((p: any) => p.dataKey === "unknown");
 
         return (
             <div
@@ -41,18 +44,27 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 <div style={{ fontWeight: 600, marginBottom: "0.5rem", fontSize: "1rem" }}>{label}</div>
 
                 <div style={{ color: "#38a169" }}>
-                    <strong>Andel kvinner:</strong> {female?.value}%{" "}
+                    <strong>Andel kvinner:</strong> {female?.value}% {" "}
                     <span style={{ fontSize: "0.85rem", color: "#38a169" }}>
                         ({female?.payload?.femaleCount ?? "?"} personer)
                     </span>
                 </div>
 
                 <div style={{ color: "#2d3748", marginTop: "0.25rem" }}>
-                    <strong>Andel menn:</strong> {male?.value}%{" "}
+                    <strong>Andel menn:</strong> {male?.value}% {" "}
                     <span style={{ fontSize: "0.85rem", color: "#2d3748" }}>
                         ({male?.payload?.maleCount ?? "?"} personer)
                     </span>
                 </div>
+
+                {unknown && (
+                    <div style={{ color: "#999b9d", marginTop: "0.25rem" }}>
+                        <strong>Ukjent:</strong> {unknown?.value}% {" "}
+                        <span style={{ fontSize: "0.85rem", color: "#999b9d" }}>
+                            ({unknown?.payload?.unknownCount ?? "?"} personer)
+                        </span>
+                    </div>
+                )}
             </div>
         );
     }
@@ -70,6 +82,7 @@ export default function StatBarChart({ data }: StatBarChartProps) {
                     <Legend />
                     <Bar dataKey="female" fill="#38a169" name="Kvinner" />
                     <Bar dataKey="male" fill="#2d3748" name="Menn" />
+                    <Bar dataKey="unknown" fill="#999b9d" name="Ukjent" />
                 </BarChart>
             </ResponsiveContainer>
         </div>

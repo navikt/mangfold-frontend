@@ -41,14 +41,10 @@ export default function DashboardContent() {
           mode="antall"
         />
       </div>
+      <StatistikkPanel />
 
-      <div className="chart-section">
-        <StatistikkPanel />
-      </div>
-
-      <div className="chart-section">
-        <StatistikkExplorer />
-      </div>
+      <StatistikkExplorer />
+      
     </section>
   );
 }

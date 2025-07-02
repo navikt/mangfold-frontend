@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Heading, Button, Select, Checkbox, Tooltip } from "@navikt/ds-react";
-import KjonnPerSeksjonChart from "./KjonnPerSeksjonChart";
-import AlderPerSeksjonChart from "./AlderPerSeksjonChart";
+import FordelingEtterAvdelinger from "./FordelingEtterAvdeling";
+import FordelingEtterRoller from "./FordelingEtterRoller";
 import StatBarChart from "./StatBarChart";
 import "../css/ChartToggleView.css";
 import { kjonnData } from "../data/kjonnData";
@@ -36,13 +36,9 @@ export default function StatistikkExplorer() {
 
   return (
     <div className="chart-toggle-wrapper">
-      <div className="chart-section">
-        <KjonnPerSeksjonChart />
-      </div>
+      <FordelingEtterAvdelinger />
 
-      <div className="chart-section">
-        <AlderPerSeksjonChart />
-      </div>
+      <FordelingEtterRoller />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem" }}>
         <Heading level="2" size="medium" spacing>
@@ -154,7 +150,6 @@ export default function StatistikkExplorer() {
         </div>
       </div>
       <StatBarChart data={categoryData} />
-
     </div>
   );
 }
