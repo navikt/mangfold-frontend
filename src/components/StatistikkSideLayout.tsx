@@ -85,18 +85,14 @@ export default function StatistikkSideLayout({
         >
           <GenderIconCard
             title={`Kjønnsfordelingen totalt i prosent – ${selectedYear}`}
-            femalePercentage={percentFemale}
-            malePercentage={percentMale}
-            femaleCount={totalFemale}
-            maleCount={totalMale}
+            female={percentFemale}
+            male={percentMale}
             mode="prosent"
           />
           <GenderIconCard
             title={`Kjønnsfordelingen totalt i antall – ${selectedYear}`}
-            femalePercentage={percentFemale}
-            malePercentage={percentMale}
-            femaleCount={totalFemale}
-            maleCount={totalMale}
+            female={totalFemale}
+            male={totalMale}
             mode="antall"
           />
         </div>
@@ -165,7 +161,7 @@ export default function StatistikkSideLayout({
           <ChartTableView
             showTable={true}
             aggregatedData={filteredData}
-            year={[selectedYear, selectedYear]}
+            // year={[selectedYear, selectedYear]}
           />
         ) : (
           <StatBarChart data={filteredData} />
