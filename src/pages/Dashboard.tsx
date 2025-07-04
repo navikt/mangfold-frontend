@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Tooltip, Button } from "@navikt/ds-react";
 import DashboardContent from "../components/DashboardContent";
+import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
 import Nyrekruttering from "../components/Nyrekruttering";
 // import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<"hoved" | "nyrekruttering">("hoved");
+  const [activeTab, setActiveTab] = useState<"hoved" | "nyrekruttering" | "data">("hoved");
 
   return (
     <main style={{ padding: "2rem" }}>
-      {/* Tabs for å bytte mellom visninger */}
       <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
         <Button
           variant={activeTab === "hoved" ? "primary" : "secondary"}
@@ -32,11 +32,19 @@ export default function Dashboard() {
             </Button>
           </span>
         </Tooltip>
+
+        <Button
+          variant={activeTab === "data" ? "primary" : "secondary"}
+          onClick={() => setActiveTab("data")}
+        >
+          Om data
+        </Button>
       </div>
 
       {activeTab === "hoved" && <DashboardContent />}
       {activeTab === "nyrekruttering" && <Nyrekruttering />}
-      {/* {activeTab === "oppsigelse" && <Oppsigelse />}*/}
+      {activeTab === "data" && <DatagrunnlagInfo />}
+      {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
     </main>
   );
 }

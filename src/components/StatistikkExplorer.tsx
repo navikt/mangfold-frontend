@@ -1,43 +1,111 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Heading, Button, Select, Checkbox, Tooltip } from "@navikt/ds-react";
 import FordelingEtterAvdelinger from "./FordelingEtterAvdeling";
 import FordelingEtterRoller from "./FordelingEtterRoller";
 import StatBarChart from "./StatBarChart";
 import "../css/ChartToggleView.css";
-import { kjonnData } from "../data/kjonnData";
-import { statisticsData } from "../data/StatistikkData";
-import type { StatCategory, StatEntry } from "../data/StatistikkData";
+import { useKjonnData } from "../data/useKjonnData";
 
-const CATEGORY_LABELS: { key: StatCategory; label: string }[] = [
+// API-type
+type ApiStatEntry = {
+  kategori: string;
+  gruppe: string;
+  kjonnAntall: {
+    kvinne?: number;
+    mann?: number;
+    ukjent?: number;
+  };
+};
+
+type NormalizedStatEntry = {
+  label: string;
+  female: number;
+  male: number;
+  unknown: number;
+  femaleCount: number;
+  maleCount: number;
+  unknownCount: number;
+  total: number;
+};
+
+const CATEGORY_LABELS = [
   { key: "ansiennitet", label: "Ansiennitet" },
   { key: "lederniva", label: "Ledernivå" },
   { key: "stillingsgruppe", label: "Stillingsgruppe" },
   { key: "utdanningsniva", label: "Utdanningsnivå" },
 ];
 
-const sectionOptionsByDepartment: Record<string, string[]> = Array.from(
-  kjonnData.reduce((acc, curr) => {
-    if (!acc.has(curr.department)) acc.set(curr.department, new Set());
-    acc.get(curr.department)?.add(curr.section);
-    return acc;
-  }, new Map<string, Set<string>>())
-).reduce((acc, [department, sections]) => {
-  acc[department] = Array.from(sections);
-  return acc;
-}, {} as Record<string, string[]>);
-
 export default function StatistikkExplorer() {
-  const [selectedCategory, setSelectedCategory] = useState<StatCategory>("ansiennitet");
+  const { data: kjonnData } = useKjonnData();
+
+  const [selectedCategory, setSelectedCategory] = useState("ansiennitet");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
 
-  const departmentOptions = Array.from(new Set(kjonnData.map((d) => d.department)));
-  const categoryData: StatEntry[] = statisticsData[selectedCategory];
+  const [rawData, setRawData] = useState<ApiStatEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        setLoading(true);
+        const res = await fetch("https://mangfold-backend.intern.nav.no/kjonn-statistikk-kategori");
+        const json: ApiStatEntry[] = await res.json();
+        setRawData(json);
+      } catch (e) {
+        console.error("Feil ved henting av statistikk:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const departmentOptions = useMemo(
+    () => Array.from(new Set(kjonnData.map((d) => d.department).filter(Boolean))),
+    [kjonnData]
+  );
+
+  const sectionOptionsByDepartment = useMemo(() => {
+    const mapping: Record<string, string[]> = {};
+    kjonnData.forEach((curr) => {
+      if (!mapping[curr.department]) mapping[curr.department] = [];
+      if (!mapping[curr.department].includes(curr.section)) {
+        mapping[curr.department].push(curr.section);
+      }
+    });
+    return mapping;
+  }, [kjonnData]);
+
+  const filteredData: NormalizedStatEntry[] = useMemo(() => {
+    return rawData
+      .filter((entry) => entry.kategori === selectedCategory)
+      .map((entry) => {
+        const female = entry.kjonnAntall.kvinne ?? 0;
+        const male = entry.kjonnAntall.mann ?? 0;
+        const unknown = entry.kjonnAntall.ukjent ?? 0;
+        const total = female + male + unknown;
+
+        const femalePercent = total ? (female / total) * 100 : 0;
+        const malePercent = total ? (male / total) * 100 : 0;
+        const unknownPercent = total ? (unknown / total) * 100 : 0;
+
+        return {
+          label: entry.gruppe,
+          female: +femalePercent.toFixed(1),
+          male: +malePercent.toFixed(1),
+          unknown: +unknownPercent.toFixed(1),
+          femaleCount: female,
+          maleCount: male,
+          unknownCount: unknown,
+          total,
+        };
+      });
+  }, [rawData, selectedCategory]);
 
   return (
     <div className="chart-toggle-wrapper">
       <FordelingEtterAvdelinger />
-
       <FordelingEtterRoller />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem" }}>
@@ -65,14 +133,7 @@ export default function StatistikkExplorer() {
 
         {selectedDepartment && sectionOptionsByDepartment[selectedDepartment] && (
           <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "0.5rem",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
               <Heading level="3" size="small">Seksjoner</Heading>
               <Button
                 variant="tertiary"
@@ -86,7 +147,6 @@ export default function StatistikkExplorer() {
                 Nullstill
               </Button>
             </div>
-
             <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
               {sectionOptionsByDepartment[selectedDepartment].map((section) => (
                 <Checkbox
@@ -109,34 +169,12 @@ export default function StatistikkExplorer() {
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           {CATEGORY_LABELS.map((cat) => {
-            const isDisabled = cat.key === "utdanningsniva";
-
-            if (isDisabled) {
-              return (
-                <Tooltip
-                  key={cat.key}
-                  content="Denne kategorien er deaktivert fordi vi mangler data."
-                >
-                  <span
-                    style={{
-                      display: "inline-block",
-                      border: "2px solid #0067C5",
-                      borderRadius: "0.375rem",
-                      padding: "0.375rem 0.75rem",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      color: "#0067C5",
-                      cursor: "not-allowed",
-                      backgroundColor: "#f9fafb",
-                    }}
-                  >
-                    {cat.label}
-                  </span>
-                </Tooltip>
-              );
-            }
-
-            return (
+            const isDisabled = !rawData.some((entry) => entry.kategori === cat.key);
+            return isDisabled ? (
+              <Tooltip key={cat.key} content="Ingen data tilgjengelig for denne kategorien.">
+                <span className="disabled-button">{cat.label}</span>
+              </Tooltip>
+            ) : (
               <Button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
@@ -149,7 +187,12 @@ export default function StatistikkExplorer() {
           })}
         </div>
       </div>
-      <StatBarChart data={categoryData} />
+
+      {loading ? (
+        <p>Laster kategori-data...</p>
+      ) : (
+        <StatBarChart data={filteredData} />
+      )}
     </div>
   );
 }

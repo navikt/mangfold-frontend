@@ -169,7 +169,7 @@ export default function StatistikkSideLayout({
       </div>
 
       {selectedCategory === "alder" && (
-        <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#334155", marginTop: "0.5rem" }}>
+        <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#000000", marginTop: "0.5rem" }}>
           Aldersgruppene er aggregert for å gjøre fordelingen tydeligere ({selectedYear})
         </p>
       )}
