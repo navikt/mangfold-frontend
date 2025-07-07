@@ -1,12 +1,13 @@
 import { useState } from "react";
-import {Button } from "@navikt/ds-react";
+import { Button } from "@navikt/ds-react";
 import DashboardContent from "../components/DashboardContent";
 import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
+import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
 // import Nyrekruttering from "../components/Nyrekruttering";
 // import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<"hoved" | "nyrekruttering" | "data">("hoved");
+  const [activeTab, setActiveTab] = useState<"hoved" | "nyrekruttering" | "kategori" | "data">("hoved");
 
   return (
     <main style={{ padding: "2rem" }}>
@@ -16,6 +17,13 @@ export default function Dashboard() {
           onClick={() => setActiveTab("hoved")}
         >
           Hovedoversikt
+        </Button>
+
+        <Button
+          variant={activeTab === "kategori" ? "primary" : "secondary"}
+          onClick={() => setActiveTab("kategori")}
+        >
+          Kategorier
         </Button>
 
         {/* <Button
@@ -45,6 +53,7 @@ export default function Dashboard() {
       {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
       {activeTab === "data" && <DatagrunnlagInfo />}
       {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
+      {activeTab === "kategori" && <StatistikkExplorerTab />}
     </main>
   );
 }
