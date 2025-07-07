@@ -18,12 +18,13 @@ const ViewDescriptions = {
     alder: "Her ser du aldersfordelingen per seksjon innenfor valgt avdeling.",
 };
 
-const ALDER_FARGER: Record<string, string> = {
-    "<30": "#0e4d1b",
-    "30-50": "#208444",
-    "50+": "#32bf66",
-    "Ukjent alder": "#999b9d",
-};
+// Endre ALDER_FARGER til å bruke Map for å beholde rekkefølgen
+const ALDER_FARGER = new Map([
+    ["<30", "#0e4d1b"],
+    ["30-50", "#208444"],
+    ["50+", "#32bf66"],
+    ["Ukjent alder", "#999b9d"]
+]);
 
 function normalizePercentages(groups: Record<string, number>): Record<string, number> {
     const total = Object.values(groups).reduce((sum, val) => sum + val, 0);
@@ -79,7 +80,7 @@ function CustomTooltip({ active, payload, label }: any) {
                     .filter(gruppe => entry.alderGrupper?.[gruppe] > 0)
                     .map(gruppe => (
                         <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                            <span style={{ width: 10, height: 10, borderRadius: 2, background: ALDER_FARGER[gruppe] ?? "#ccc", display: "inline-block" }} />
+                            <span style={{ width: 10, height: 10, borderRadius: 2, background: ALDER_FARGER.get(gruppe) ?? "#ccc", display: "inline-block" }} />
                             <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry.alderGrupper[gruppe]} personer)</span>
                         </div>
                     ))
@@ -186,12 +187,10 @@ export default function FordelingEtterAvdelinger() {
     }, [alderData, department, alderGrupperDynamisk]);
 
     const sortedData = useMemo(() => {
-        return view === "kjonn"
-            ? [...kjonnChartData].sort((a, b) => b.female - a.female)
-            : [...(alderChartData as AlderChartEntry[])].sort(
-                (a, b) => (b[`percent_${alderGrupperDynamisk[0]}`] ?? 0) - (a[`percent_${alderGrupperDynamisk[0]}`] ?? 0)
-            );
-    }, [view, kjonnChartData, alderChartData, alderGrupperDynamisk]);
+        return [...(view === "kjonn" ? kjonnChartData : alderChartData)].sort((a, b) => 
+            a.section.localeCompare(b.section)
+        );
+    }, [view, kjonnChartData, alderChartData]);
 
     const barHeight = 44;
     const yAxisWidth = 260;
@@ -231,11 +230,14 @@ export default function FordelingEtterAvdelinger() {
                         )}
                     </>
                 ) : (
-                    Object.entries(ALDER_FARGER)
+                    Array.from(ALDER_FARGER.entries())
                         .filter(([gruppe]) => gruppe !== "Ukjent alder" || hasUkjentAlder)
                         .map(([gruppe, farge]) => (
                             <span key={gruppe} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, color: "#334155" }}>
-                                <span style={{ width: 14, height: 14, borderRadius: 4, background: farge, display: "inline-block" }} onMouseEnter={() => setHovered(gruppe)} onMouseLeave={() => setHovered(null)} />
+                                <span style={{ width: 14, height: 14, borderRadius: 4, background: farge, display: "inline-block" }} 
+                                    onMouseEnter={() => setHovered(gruppe)} 
+                                    onMouseLeave={() => setHovered(null)} 
+                                />
                                 {gruppe}
                             </span>
                         ))
@@ -256,8 +258,14 @@ export default function FordelingEtterAvdelinger() {
                             )}
                         </>
                     ) : (
-                        alderGrupperDynamisk.map(gruppe => (
-                            <Bar key={gruppe} dataKey={`percent_${gruppe}`} stackId="a" fill={ALDER_FARGER[gruppe] ?? "#ccc"} fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3} />
+                        Array.from(ALDER_FARGER.keys()).map(gruppe => (
+                            <Bar 
+                                key={gruppe} 
+                                dataKey={`percent_${gruppe}`} 
+                                stackId="a" 
+                                fill={ALDER_FARGER.get(gruppe)} 
+                                fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3} 
+                            />
                         ))
                     )}
                 </BarChart>
