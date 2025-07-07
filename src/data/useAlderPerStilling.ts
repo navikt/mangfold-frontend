@@ -26,15 +26,17 @@ export interface AgeRoleEntry {
   unknownCount: number;
 }
 
-export function useAlderPerRolle() {
+export function useAlderPerStilling() {
   const [data, setData] = useState<AgeRoleEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetch("https://mangfold-backend.intern.nav.no/aldersgruppe-per-rolle")
+    fetch("https://mangfold-backend.intern.nav.no/aldersgruppe-per-stilling")
       .then(res => res.json())
       .then((apiData: RawAlderData[]) => {
+        console.log("Aldersdata fra API:", apiData); // 👈 LEGG TIL DENNE
+
         const rolleMap: Record<string, { under35: number; age35to50: number; over50: number; unknown: number }> = {};
 
         for (const item of apiData) {

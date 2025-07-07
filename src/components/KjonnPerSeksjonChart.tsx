@@ -4,7 +4,7 @@ import { Heading } from "@navikt/ds-react";
 import DepartmentSelector from "./DepartmentSelector";
 import "../css/KjonnPerSeksjonChart.css";
 import { useKjonnData } from "../data/useKjonnData";
-import { useKjonnPerRolle } from "../data/useKjonnPerRolle";
+import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
 
 interface DataEntry {
   section: string;
@@ -80,7 +80,7 @@ export default function KjonnPerSeksjonChart() {
   const [activeView, setActiveView] = useState<"department" | "role" | null>(null);
 
   const { data: kjonnData, departments } = useKjonnData();
-  const { data: rolleData } = useKjonnPerRolle();
+  const { data: rolleData } = useKjonnPerStilling();
 
   const baseData: DataEntry[] = activeView === "role"
     ? rolleData.map(({ section, female, male, unknown, total, femaleCount, maleCount, unknownCount }) => ({

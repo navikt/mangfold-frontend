@@ -10,7 +10,7 @@ export interface RolleKjonn {
 }
 
 export interface GenderRoleEntry {
-  section: string; // rollenavn
+  section: string; 
   female: number;
   male: number;
   unknown: number;
@@ -20,13 +20,13 @@ export interface GenderRoleEntry {
   unknownCount: number;
 }
 
-export function useKjonnPerRolle() {
+export function useKjonnPerStilling() {
   const [data, setData] = useState<GenderRoleEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetch("https://mangfold-backend.intern.nav.no/kjonn-per-rolle")
+    fetch("https://mangfold-backend.intern.nav.no/kjonn-per-stilling")
       .then(res => res.json())
       .then((apiData: RolleKjonn[]) => {
         const result = apiData.map(role => {

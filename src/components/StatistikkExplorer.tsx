@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Heading, Button, Select, Checkbox, Tooltip } from "@navikt/ds-react";
 import FordelingEtterAvdelinger from "./FordelingEtterAvdeling";
-import FordelingEtterRoller from "./FordelingEtterRoller";
+import FordelingEtterStilling from "./FordelingEtterStilling";
 import StatBarChart from "./StatBarChart";
 import "../css/ChartToggleView.css";
 import { useKjonnData } from "../data/useKjonnData";
@@ -106,7 +106,7 @@ export default function StatistikkExplorer() {
   return (
     <div className="chart-toggle-wrapper">
       <FordelingEtterAvdelinger />
-      <FordelingEtterRoller />
+      <FordelingEtterStilling />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem" }}>
         <Heading level="2" size="medium" spacing>
