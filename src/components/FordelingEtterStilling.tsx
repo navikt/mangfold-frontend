@@ -125,22 +125,6 @@ export default function FordelingEtterStilling() {
         return (alderData ?? []).some(entry => (entry.alderGrupper?.["Ukjent alder"] ?? 0) > 0);
     }, [alderData]);
 
-    // Denne typingen matcher dynamiske percent-keys
-    type AlderChartDataRow = {
-        section: string;
-        under35: number;
-        age35to50: number;
-        over50: number;
-        unknown: number;
-        total: number;
-        under35Count: number;
-        age35to50Count: number;
-        over50Count: number;
-        unknownCount: number;
-        [key: `percent_${string}`]: number;
-        [key: `${string}Count`]: number;
-    };
-
     const alderChartData = useMemo(() => {
         return (alderData ?? []).map(entry => {
             const total = Object.values(entry.alderGrupper).reduce((sum, cnt) => sum + cnt, 0);
