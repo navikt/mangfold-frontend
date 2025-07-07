@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Tooltip, Button } from "@navikt/ds-react";
+import {Button } from "@navikt/ds-react";
 import DashboardContent from "../components/DashboardContent";
 import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
-import Nyrekruttering from "../components/Nyrekruttering";
+// import Nyrekruttering from "../components/Nyrekruttering";
 // import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
 
 export default function Dashboard() {
@@ -18,20 +18,20 @@ export default function Dashboard() {
           Hovedoversikt
         </Button>
 
-        <Button
+        {/* <Button
           variant={activeTab === "nyrekruttering" ? "primary" : "secondary"}
           onClick={() => setActiveTab("nyrekruttering")}
         >
           Nyrekruttering
-        </Button>
+        </Button> */}
 
-        <Tooltip content="Oppsigelse er ikke tilgjengelig fordi historiske data mangler.">
+        {/* <Tooltip content="Oppsigelse er ikke tilgjengelig fordi historiske data mangler.">
           <span>
             <Button variant="secondary" disabled>
               Oppsigelse
             </Button>
           </span>
-        </Tooltip>
+        </Tooltip> */}
 
         <Button
           variant={activeTab === "data" ? "primary" : "secondary"}
@@ -42,7 +42,7 @@ export default function Dashboard() {
       </div>
 
       {activeTab === "hoved" && <DashboardContent />}
-      {activeTab === "nyrekruttering" && <Nyrekruttering />}
+      {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
       {activeTab === "data" && <DatagrunnlagInfo />}
       {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
     </main>
