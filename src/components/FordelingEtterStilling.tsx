@@ -7,8 +7,8 @@ import { useAlderPerStilling } from "../data/useAlderPerStilling";
 type ViewType = "kjonn" | "alder";
 
 const ViewDescriptions = {
-    kjonn: "Her ser du kjønnsfordelingen per rolle/stilling.",
-    alder: "Her ser du aldersfordelingen per rolle/stilling.",
+    kjonn: "Her ser du kjønnsfordelingen per stilling.",
+    alder: "Her ser du aldersfordelingen per stilling.",
 };
 
 const ALDER_FARGER: Record<string, string> = {
@@ -109,16 +109,20 @@ export default function FordelingEtterStilling() {
     const alderGrupperDynamisk = useMemo(() => {
         const grupper = new Set<string>();
         (alderData ?? []).forEach(entry => {
-            if ('under35' in entry) grupper.add("<30");
-            if ('age35to50' in entry) grupper.add("30-50");
-            if ('over50' in entry) grupper.add("50+");
-            if ('unknown' in entry) grupper.add("Ukjent alder");
+            Object.keys(entry.alderGrupper).forEach(gruppe => grupper.add(gruppe));
         });
-        return Array.from(grupper).sort();
+        // Sorter aldersgruppene i riktig rekkefølge
+        return Array.from(grupper).sort((a, b) => {
+            if (a === "Ukjent alder") return 1;
+            if (b === "Ukjent alder") return -1;
+            const aNum = parseInt(a.replace(/[^0-9]/g, ''));
+            const bNum = parseInt(b.replace(/[^0-9]/g, ''));
+            return aNum - bNum;
+        });
     }, [alderData]);
 
     const hasUkjentAlder = useMemo(() => {
-        return (alderData ?? []).some(entry => entry.unknownCount > 0);
+        return (alderData ?? []).some(entry => (entry.alderGrupper?.["Ukjent alder"] ?? 0) > 0);
     }, [alderData]);
 
     // Denne typingen matcher dynamiske percent-keys
@@ -137,53 +141,53 @@ export default function FordelingEtterStilling() {
         [key: `${string}Count`]: number;
     };
 
-    const alderChartData: AlderChartDataRow[] = useMemo(() => {
+    const alderChartData = useMemo(() => {
         return (alderData ?? []).map(entry => {
-            const total = entry.total;
-            const rawPercentages: Record<string, number> = {
-                "<30": total ? (entry.under35 / total) * 100 : 0,
-                "30-50": total ? (entry.age35to50 / total) * 100 : 0,
-                "50+": total ? (entry.over50 / total) * 100 : 0,
-                "Ukjent alder": total ? (entry.unknown / total) * 100 : 0,
-            };
+            const total = Object.values(entry.alderGrupper).reduce((sum, cnt) => sum + cnt, 0);
+            const rawPercentages: Record<string, number> = {};
+            
+            alderGrupperDynamisk.forEach(gruppe => {
+                const val = entry.alderGrupper[gruppe] ?? 0;
+                rawPercentages[gruppe] = total > 0 ? (val / total) * 100 : 0;
+            });
+
             const floored: Record<string, number> = {};
             alderGrupperDynamisk.forEach(gruppe => {
                 floored[gruppe] = Math.floor(rawPercentages[gruppe]);
             });
+
             let remainder = 100 - Object.values(floored).reduce((sum, v) => sum + v, 0);
+            
             const sortedByDecimal = [...alderGrupperDynamisk].sort((a, b) =>
                 (rawPercentages[b] - floored[b]) - (rawPercentages[a] - floored[a])
             );
+
             for (let i = 0; i < remainder; i++) {
                 floored[sortedByDecimal[i % sortedByDecimal.length]] += 1;
             }
+
             const percentages: Record<string, number> = {};
+            const counts: Record<string, number> = {};
+            
             alderGrupperDynamisk.forEach(gruppe => {
                 percentages[`percent_${gruppe}`] = floored[gruppe];
+                counts[`${gruppe}Count`] = entry.alderGrupper[gruppe] ?? 0;
             });
-            // NB: også inkluder antall for hver gruppe
+
             return {
-                ...entry,
+                section: entry.section,
                 ...percentages,
-                "<30Count": entry.under35Count,
-                "30-50Count": entry.age35to50Count,
-                "50+Count": entry.over50Count,
-                "Ukjent alderCount": entry.unknownCount,
+                ...counts,
+                alderGrupper: entry.alderGrupper
             };
         });
     }, [alderData, alderGrupperDynamisk]);
 
     // Type assertion for dynamiske keys
-  const sortedData = useMemo(() => {
-    return view === "kjonn"
-        ? [...kjonnChartData].sort((a, b) => b.female - a.female)
-        : [...alderChartData].sort(
-            (a, b) =>
-                (b[`percent_${alderGrupperDynamisk[0]}`] ?? 0) -
-                (a[`percent_${alderGrupperDynamisk[0]}`] ?? 0)
-        );
-}, [view, kjonnChartData, alderChartData, alderGrupperDynamisk]);
-
+    const sortedData = useMemo(() => {
+        return [...(view === "kjonn" ? kjonnChartData : alderChartData)]
+            .sort((a, b) => a.section.localeCompare(b.section));
+    }, [view, kjonnChartData, alderChartData]);
 
     const barHeight = 44;
     const yAxisWidth = 260;
@@ -191,7 +195,7 @@ export default function FordelingEtterStilling() {
     return (
         <div>
             <Heading level="2" size="medium" spacing>
-                Kjønns- og aldersfordeling per rolle/stilling
+                Kjønns- og aldersfordeling per stilling
             </Heading>
 
             <p style={{ marginBottom: "1.5rem" }}>{ViewDescriptions[view]}</p>
