@@ -17,6 +17,11 @@ spec:
     requests:
       cpu: 10m
       memory: 32Mi
+  accessPolicy:
+    outbound:
+      rules:
+        - application: nav-dekoratoren
+          namespace: personbruker
   #Legger de senere når vi har de klærer
   # liveness:
   #  path: /
