@@ -45,4 +45,3 @@ jobs:
           CLUSTER: dev-gcp                     
           RESOURCE: .nais/app.yaml          
           VAR: image=${{ steps.docker-build-push-frontend.outputs.image }}
-          TELEMETRY: ${{ steps.docker-build-push.outputs.telemetry }}
