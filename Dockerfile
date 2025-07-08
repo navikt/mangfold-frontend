@@ -1,15 +1,12 @@
-# build frontend and server
-FROM library/node:lts-alpine3.20 AS build
-WORKDIR /.
-COPY package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts ./
-RUN npm ci
+FROM cgr.dev/chainguard/node
+ENV NODE_ENV=production
 
-COPY /. ./
-RUN npm run build
+WORKDIR /app
 
-# production environment
-FROM nginxinc/nginx-unprivileged:stable-alpine
-COPY --from=build /dist /usr/share/nginx/html
-#COPY ./config/nginx/nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+COPY --chown=node:node package.json package-lock.json server.mjs .
+COPY --chown=node:node dist/ ./dist/
+COPY --chown=node:node node_modules/ ./node_modules/
+
+RUN npm install --omit-dev
+
+CMD [ "server.mjs" ]
