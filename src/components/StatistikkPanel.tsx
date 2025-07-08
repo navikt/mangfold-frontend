@@ -33,6 +33,7 @@ type AggregatedAvdeling = {
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload && payload.length > 1) {
     const data = payload[0].payload;
+    const totalCount = (data.femaleCount ?? 0) + (data.maleCount ?? 0);
 
     return (
       <div
@@ -63,7 +64,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
           <span
             style={{
               display: "inline-block",
@@ -77,12 +78,17 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
             Menn <strong>{data.male}%</strong> ({data.maleCount} personer)
           </span>
         </div>
+
+        <div style={{ borderTop: "1px solid #ccc", paddingTop: "6px", marginTop: "4px" }}>
+          Totalt: 100% (<strong>{totalCount}</strong> personer)
+        </div>
       </div>
     );
   }
 
   return null;
 }
+
 
 export default function StatistikkPanel() {
   const [selectedYear] = useState(new Date().getFullYear());

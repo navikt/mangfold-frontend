@@ -50,12 +50,20 @@ function normalizePercentages(groups: Record<string, number>): Record<string, nu
     return floored;
 }
 
+
+
+
 function CustomTooltip({ active, payload, label }: any) {
     if (!active || !payload || !payload.length) return null;
     const entry = payload[0].payload;
     const isGender = "femaleCount" in entry;
 
     const ALDER_REKKEFOLGE = ["30-50", "50+", "<30", "Ukjent alder"];
+
+    const total = isGender
+        ? (entry.femaleCount ?? 0) + (entry.maleCount ?? 0) + (entry.unknownCount ?? 0)
+        : (Object.values(entry.alderGrupper ?? {}) as number[]).reduce((sum, val) => sum + val, 0);
+
 
     return (
         <div style={{ background: "#2d3748", color: "white", padding: "1rem", borderRadius: "0.5rem", fontSize: "14px", lineHeight: "1.6", maxWidth: "300px" }}>
@@ -76,16 +84,25 @@ function CustomTooltip({ active, payload, label }: any) {
                             <span>Ukjent <strong>{entry.unknown}%</strong> ({entry.unknownCount} personer)</span>
                         </div>
                     )}
+                    <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
+                        Totalt: 100% (<strong>{total}</strong> personer)
+                    </div>
                 </>
             ) : (
-                ALDER_REKKEFOLGE
-                    .filter(gruppe => entry.alderGrupper?.[gruppe] > 0)
-                    .map(gruppe => (
-                        <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                            <span className="gender-square" style={{ background: ALDER_FARGER.get(gruppe) ?? "#ccc" }} />
-                            <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry.alderGrupper[gruppe]} personer)</span>
-                        </div>
-                    ))
+                <>
+                    {ALDER_REKKEFOLGE
+                        .filter(gruppe => entry.alderGrupper?.[gruppe] > 0)
+                        .map(gruppe => (
+                            <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                                <span className="gender-square" style={{ background: ALDER_FARGER.get(gruppe) ?? "#ccc" }} />
+                                <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry.alderGrupper[gruppe]} personer)</span>
+                            </div>
+                        ))
+                    }
+                    <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
+                        Totalt: 100% (<strong>{total}</strong> personer)
+                    </div>
+                </>
             )}
 
         </div>
@@ -195,6 +212,9 @@ export default function FordelingEtterAvdelinger() {
 
     const barHeight = 44;
     const yAxisWidth = 260;
+
+
+
 
     return (
         <div>

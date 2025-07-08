@@ -40,13 +40,18 @@ function CustomTooltip({ active, payload, label }: any) {
     const entry = payload[0].payload;
     const isGender = "femaleCount" in entry;
     const ALDER_REKKEFOLGE = ["30-50", "50+", "<30", "Ukjent alder"];
+
+    const total = isGender
+        ? (entry.femaleCount ?? 0) + (entry.maleCount ?? 0) + (entry.unknownCount ?? 0)
+        : (Object.values(entry.alderGrupper ?? {}) as number[]).reduce((sum, val) => sum + val, 0);
+
     return (
         <div style={{ background: "#2d3748", color: "white", padding: "1rem", borderRadius: "0.5rem", fontSize: "14px", lineHeight: "1.6", maxWidth: "300px" }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>{label}</div>
             {isGender ? (
                 <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: 2, background: "#38a169", display: "inline-block" }} />
+                        <span style={{ width: 10, height: 10, borderRadius: 2, background: "#38a169", display: "inline-block" }} />
 
                         <span>Kvinne <strong>{entry.female}%</strong> ({entry.femaleCount} personer)</span>
                     </div>
@@ -60,17 +65,24 @@ function CustomTooltip({ active, payload, label }: any) {
                             <span>Ukjent <strong>{entry.unknown}%</strong> ({entry.unknownCount} personer)</span>
                         </div>
                     )}
+                    <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
+                        Totalt: 100% (<strong>{total}</strong> personer)
+                    </div>
                 </>
             ) : (
-                ALDER_REKKEFOLGE
-                    .filter(gruppe => entry[`percent_${gruppe}`] > 0)
-                    .map(gruppe => (
-                        <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                            <span style={{ width: 10, height: 10, borderRadius: 2, background: ALDER_FARGER[gruppe] ?? "#ccc", display: "inline-block" }} />
-                            <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry[`${gruppe}Count`] ?? 0} personer)</span>
-                        </div>
-                    ))
-            )}
+                <>
+                    {ALDER_REKKEFOLGE
+                        .filter(gruppe => entry[`percent_${gruppe}`] > 0)
+                        .map(gruppe => (
+                            <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                                <span style={{ width: 10, height: 10, borderRadius: 2, background: ALDER_FARGER[gruppe] ?? "#ccc", display: "inline-block" }} />
+                                <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry[`${gruppe}Count`] ?? 0} personer)</span>
+                            </div>
+                        ))}
+                    <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
+                        Totalt: 100% (<strong>{total}</strong> personer)
+                    </div>
+                </>)}
         </div>
     );
 }
@@ -130,7 +142,7 @@ export default function FordelingEtterStilling() {
         return (alderData ?? []).map(entry => {
             const total = Object.values(entry.alderGrupper).reduce((sum, cnt) => sum + cnt, 0);
             const rawPercentages: Record<string, number> = {};
-            
+
             alderGrupperDynamisk.forEach(gruppe => {
                 const val = entry.alderGrupper[gruppe] ?? 0;
                 rawPercentages[gruppe] = total > 0 ? (val / total) * 100 : 0;
@@ -142,7 +154,7 @@ export default function FordelingEtterStilling() {
             });
 
             let remainder = 100 - Object.values(floored).reduce((sum, v) => sum + v, 0);
-            
+
             const sortedByDecimal = [...alderGrupperDynamisk].sort((a, b) =>
                 (rawPercentages[b] - floored[b]) - (rawPercentages[a] - floored[a])
             );
@@ -153,7 +165,7 @@ export default function FordelingEtterStilling() {
 
             const percentages: Record<string, number> = {};
             const counts: Record<string, number> = {};
-            
+
             alderGrupperDynamisk.forEach(gruppe => {
                 percentages[`percent_${gruppe}`] = floored[gruppe];
                 counts[`${gruppe}Count`] = entry.alderGrupper[gruppe] ?? 0;
@@ -192,7 +204,7 @@ export default function FordelingEtterStilling() {
 
             <div style={{ display: "flex", justifyContent: "center", gap: 36, marginBottom: 16, fontWeight: 500, alignItems: "center" }}>
                 {view === "kjonn" ? (
-                   <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
+                    <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
                         <>
                             <span
                                 className="gender-label"
