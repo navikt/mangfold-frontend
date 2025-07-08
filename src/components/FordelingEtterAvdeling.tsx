@@ -3,6 +3,8 @@ import { Heading } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useKjonnData } from "../data/useKjonnData";
 import { useAlderData } from "../data/useAlderData";
+import "../css/KjonnPerSeksjonChart.css";
+
 
 interface AlderChartEntry {
     section: string;
@@ -61,16 +63,16 @@ function CustomTooltip({ active, payload, label }: any) {
             {isGender ? (
                 <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#38a169", display: "inline-block" }} />
-                        <span>Kvinne <strong>{entry.female}%</strong> ({entry.femaleCount} personer)</span>
+                        <span className="gender-square" style={{ background: "#38a169" }} />
+                        <span>Andel kvinner <strong>{entry.female}%</strong> ({entry.femaleCount} personer)</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: entry.unknownCount > 0 ? 4 : 0 }}>
-                        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#1e293b", display: "inline-block" }} />
-                        <span>Mann <strong>{entry.male}%</strong> ({entry.maleCount} personer)</span>
+                        <span className="gender-square" style={{ background: "#1e293b" }} />
+                        <span>Andel menn <strong>{entry.male}%</strong> ({entry.maleCount} personer)</span>
                     </div>
                     {entry.unknownCount > 0 && (
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#999b9d", display: "inline-block" }} />
+                            <span className="gender-square" style={{ background: "#999b9d" }} />
                             <span>Ukjent <strong>{entry.unknown}%</strong> ({entry.unknownCount} personer)</span>
                         </div>
                     )}
@@ -80,11 +82,12 @@ function CustomTooltip({ active, payload, label }: any) {
                     .filter(gruppe => entry.alderGrupper?.[gruppe] > 0)
                     .map(gruppe => (
                         <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                            <span style={{ width: 10, height: 10, borderRadius: 2, background: ALDER_FARGER.get(gruppe) ?? "#ccc", display: "inline-block" }} />
+                            <span className="gender-square" style={{ background: ALDER_FARGER.get(gruppe) ?? "#ccc" }} />
                             <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry.alderGrupper[gruppe]} personer)</span>
                         </div>
                     ))
             )}
+
         </div>
     );
 }
@@ -164,12 +167,10 @@ export default function FordelingEtterAvdelinger() {
 
                 let remainder = 100 - Object.values(floored).reduce((sum, v) => sum + v, 0);
 
-                // Sorter etter hvem som har størst desimal-rester
                 const sortedByDecimal = [...alderGrupperDynamisk].sort((a, b) =>
                     (rawPercentages[b] - floored[b]) - (rawPercentages[a] - floored[a])
                 );
 
-                // Fordel resten
                 for (let i = 0; i < remainder; i++) {
                     floored[sortedByDecimal[i % sortedByDecimal.length]] += 1;
                 }
@@ -187,7 +188,7 @@ export default function FordelingEtterAvdelinger() {
     }, [alderData, department, alderGrupperDynamisk]);
 
     const sortedData = useMemo(() => {
-        return [...(view === "kjonn" ? kjonnChartData : alderChartData)].sort((a, b) => 
+        return [...(view === "kjonn" ? kjonnChartData : alderChartData)].sort((a, b) =>
             a.section.localeCompare(b.section)
         );
     }, [view, kjonnChartData, alderChartData]);
@@ -222,22 +223,47 @@ export default function FordelingEtterAvdelinger() {
 
             <div style={{ display: "flex", justifyContent: "center", gap: 36, marginBottom: 16, fontWeight: 500, alignItems: "center" }}>
                 {view === "kjonn" ? (
-                    <>
-                        <span className="dot dot-female" onMouseEnter={() => setHovered("female")} onMouseLeave={() => setHovered(null)} style={{ background: "#38a169" }} /> Kvinner
-                        <span className="dot dot-male" onMouseEnter={() => setHovered("male")} onMouseLeave={() => setHovered(null)} style={{ background: "#1e293b" }} /> Menn
-                        {hasUnknown && (
-                            <><span className="dot dot-unknown" onMouseEnter={() => setHovered("unknown")} onMouseLeave={() => setHovered(null)} style={{ background: "#999b9d" }} /> Ukjent</>
-                        )}
-                    </>
+                    <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
+                        <>
+                            <span
+                                className="gender-label"
+                                onMouseEnter={() => setHovered("female")}
+                                onMouseLeave={() => setHovered(null)}
+                            >
+                                <span className="gender-square" style={{ background: "#38a169" }} />
+                                Kvinner
+                            </span>
+                            <span
+                                className="gender-label"
+                                onMouseEnter={() => setHovered("male")}
+                                onMouseLeave={() => setHovered(null)}
+                            >
+                                <span className="gender-square" style={{ background: "#1e293b" }} />
+                                Menn
+                            </span>
+                            {hasUnknown && (
+                                <span
+                                    className="gender-label"
+                                    onMouseEnter={() => setHovered("unknown")}
+                                    onMouseLeave={() => setHovered(null)}
+                                >
+                                    <span className="gender-square" style={{ background: "#999b9d" }} />
+                                    Ukjent
+                                </span>
+                            )}
+                        </>
+                    </div>
                 ) : (
                     Array.from(ALDER_FARGER.entries())
                         .filter(([gruppe]) => gruppe !== "Ukjent alder" || hasUkjentAlder)
                         .map(([gruppe, farge]) => (
-                            <span key={gruppe} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, color: "#334155" }}>
-                                <span style={{ width: 14, height: 14, borderRadius: 4, background: farge, display: "inline-block" }} 
-                                    onMouseEnter={() => setHovered(gruppe)} 
-                                    onMouseLeave={() => setHovered(null)} 
-                                />
+                            <span
+                                key={gruppe}
+                                className="gender-label"
+                                onMouseEnter={() => setHovered(gruppe)}
+                                onMouseLeave={() => setHovered(null)}
+                            >
+                                <span className="gender-square" style={{ background: farge }} />
                                 {gruppe}
                             </span>
                         ))
@@ -259,15 +285,16 @@ export default function FordelingEtterAvdelinger() {
                         </>
                     ) : (
                         Array.from(ALDER_FARGER.keys()).map(gruppe => (
-                            <Bar 
-                                key={gruppe} 
-                                dataKey={`percent_${gruppe}`} 
-                                stackId="a" 
-                                fill={ALDER_FARGER.get(gruppe)} 
-                                fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3} 
+                            <Bar
+                                key={gruppe}
+                                dataKey={`percent_${gruppe}`}
+                                stackId="a"
+                                fill={ALDER_FARGER.get(gruppe)}
+                                fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3}
                             />
                         ))
                     )}
+
                 </BarChart>
             </ResponsiveContainer>
 

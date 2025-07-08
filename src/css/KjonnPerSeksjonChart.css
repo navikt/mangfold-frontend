@@ -9,31 +9,51 @@
   color: #2d3748;
 }
 
-.dot {
+/* Prikker generelt */
+.dot,
+.gender-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  margin-right: 0.6rem;
   transition: transform 0.2s ease;
 }
 
-.dot:hover {
+.dot:hover,
+.gender-square:hover {
   transform: scale(1.2);
 }
 
-.dot-female {
+/* Kjønnsfarger */
+.dot-female,
+.gender-square-female {
   background-color: #38a169;
 }
 
-.dot-male {
+.dot-male,
+.gender-square-male {
   background-color: #1e293b;
 }
 
-.dot-unknown {
+.dot-unknown,
+.gender-square-unknown {
   background-color: #999b9d;
 }
 
+/* Aldersfarger */
+.dot-under35 {
+  background-color: #32bf66;
+}
+
+.dot-age35to50 {
+  background-color: #208444;
+}
+
+.dot-over50 {
+  background-color: #0e4d1b;
+}
+
+/* Toggle-knapper */
 .view-toggle {
   display: flex;
   align-items: center;
@@ -84,29 +104,11 @@
   transform: rotate(45deg);
 }
 
-.legend-row {
+/* Etiketter for kjønn/alder */
+.gender-label {
   display: flex;
-  gap: 1.5rem;
   align-items: center;
-  font-size: 0.9rem;
-}
-
-.dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  display: inline-block;
-}
-
-.dot-under35 {
-  background-color: #32bf66;
-}
-.dot-age35to50 {
-   background-color: #208444;
-}
-.dot-over50 {
-  background-color: #0e4d1b;
-}
-.dot-unknown {
-  background-color: #999b9d;
+  gap: 6px;
+  font-weight: 500;
+  color: #1e293b;
 }

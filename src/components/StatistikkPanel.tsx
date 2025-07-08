@@ -7,7 +7,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
 } from "recharts";
 import ChartTableView from "./ChartTableView";
 import { CustomizedAxisTick } from "./CustomizedAxisTick";
@@ -55,12 +54,12 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
               display: "inline-block",
               width: "10px",
               height: "10px",
-              borderRadius: "50%",
+              borderRadius: "0px",
               backgroundColor: "#38a169",
             }}
           />
           <span>
-            Kvinne <strong>{data.female}%</strong> ({data.femaleCount} personer)
+            Kvinner <strong>{data.female}%</strong> ({data.femaleCount} personer)
           </span>
         </div>
 
@@ -70,12 +69,12 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
               display: "inline-block",
               width: "10px",
               height: "10px",
-              borderRadius: "50%",
+              borderRadius: "0px",
               backgroundColor: "#1e293b",
             }}
           />
           <span>
-            Mann <strong>{data.male}%</strong> ({data.maleCount} personer)
+            Menn <strong>{data.male}%</strong> ({data.maleCount} personer)
           </span>
         </div>
       </div>
@@ -88,7 +87,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
 export default function StatistikkPanel() {
   const [selectedYear] = useState(new Date().getFullYear());
   const yearRange: [number, number] = [selectedYear, selectedYear];
-
+  const [hovered, setHovered] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
   const [aggregatedData, setAggregatedData] = useState<AggregatedAvdeling[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,11 +138,40 @@ export default function StatistikkPanel() {
         likestilling og mangfold.
       </p>
 
-      <div className="control-row" style={{ alignItems: "flex-end" }}>
+      <div className="control-row">
+        <div style={{ display: "flex", justifyContent: "center", flex: 1 }}>
+          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+            <span
+              className="gender-label"
+              onMouseEnter={() => setHovered("female")}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <span
+                className="gender-square"
+                style={{ background: "#38a169", outline: hovered === "female" ? "0px solid black" : "none" }}
+              />
+              Kvinner
+            </span>
+
+            <span
+              className="gender-label"
+              onMouseEnter={() => setHovered("male")}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <span
+                className="gender-square"
+                style={{ background: "#1e293b", outline: hovered === "male" ? "0px solid black" : "none" }}
+              />
+              Menn
+            </span>
+          </div>
+        </div>
+
         <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
           {showTable ? "Vis som figur" : "Vis som tabell"}
         </Button>
       </div>
+
 
       {loading ? (
         <p>Laster avdelingsdata...</p>
@@ -164,9 +192,18 @@ export default function StatistikkPanel() {
             />
             <YAxis tickFormatter={(value) => `${value}%`} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="top" />
-            <Bar dataKey="female" name="Kvinner" fill="#38a169" />
-            <Bar dataKey="male" name="Menn" fill="#333c46" />
+            <Bar
+              dataKey="female"
+              name="Kvinner"
+              fill="#38a169"
+              fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3}
+            />
+            <Bar
+              dataKey="male"
+              name="Menn"
+              fill="#333c46"
+              fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3}
+            />
           </BarChart>
         </ResponsiveContainer>
       )}

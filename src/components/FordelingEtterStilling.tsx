@@ -46,11 +46,12 @@ function CustomTooltip({ active, payload, label }: any) {
             {isGender ? (
                 <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#38a169", display: "inline-block" }} />
+                      <span style={{ width: 10, height: 10, borderRadius: 2, background: "#38a169", display: "inline-block" }} />
+
                         <span>Kvinne <strong>{entry.female}%</strong> ({entry.femaleCount} personer)</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: entry.unknownCount > 0 ? 4 : 0 }}>
-                        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#1e293b", display: "inline-block" }} />
+                        <span style={{ width: 10, height: 10, borderRadius: 2, background: "#1e293b", display: "inline-block" }} />
                         <span>Mann <strong>{entry.male}%</strong> ({entry.maleCount} personer)</span>
                     </div>
                     {entry.unknownCount > 0 && (
@@ -191,13 +192,36 @@ export default function FordelingEtterStilling() {
 
             <div style={{ display: "flex", justifyContent: "center", gap: 36, marginBottom: 16, fontWeight: 500, alignItems: "center" }}>
                 {view === "kjonn" ? (
-                    <>
-                        <span className="dot dot-female" onMouseEnter={() => setHovered("female")} onMouseLeave={() => setHovered(null)} style={{ background: "#38a169" }} /> Kvinner
-                        <span className="dot dot-male" onMouseEnter={() => setHovered("male")} onMouseLeave={() => setHovered(null)} style={{ background: "#1e293b" }} /> Menn
-                        {hasUnknown && (
-                            <><span className="dot dot-unknown" onMouseEnter={() => setHovered("unknown")} onMouseLeave={() => setHovered(null)} style={{ background: "#999b9d" }} /> Ukjent</>
-                        )}
-                    </>
+                   <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
+                        <>
+                            <span
+                                className="gender-label"
+                                onMouseEnter={() => setHovered("female")}
+                                onMouseLeave={() => setHovered(null)}
+                            >
+                                <span className="gender-square" style={{ background: "#38a169" }} />
+                                Kvinner
+                            </span>
+                            <span
+                                className="gender-label"
+                                onMouseEnter={() => setHovered("male")}
+                                onMouseLeave={() => setHovered(null)}
+                            >
+                                <span className="gender-square" style={{ background: "#1e293b" }} />
+                                Menn
+                            </span>
+                            {hasUnknown && (
+                                <span
+                                    className="gender-label"
+                                    onMouseEnter={() => setHovered("unknown")}
+                                    onMouseLeave={() => setHovered(null)}
+                                >
+                                    <span className="gender-square" style={{ background: "#999b9d" }} />
+                                    Ukjent
+                                </span>
+                            )}
+                        </>
+                    </div>
                 ) : (
                     Object.entries(ALDER_FARGER)
                         .filter(([gruppe]) => gruppe !== "Ukjent alder" || hasUkjentAlder)

@@ -41,7 +41,6 @@
   flex-shrink: 0; 
 }
 
-
 .gender-table {
   width: 100%;
   border-collapse: collapse;
@@ -63,4 +62,42 @@
 
 .gender-table tr:hover {
   background-color: #e2e8f0;
+}
+
+/* === Symboler og hover === */
+
+/* Prikk brukt i verktøytips (tooltip) */
+.gender-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Kvadratisk symbol brukt i legende for både kjønn og alder */
+.gender-square {
+  width: 14px;
+  height: 14px;
+}
+
+/* Container for firkant + label */
+.gender-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #334155;
+  margin-right: 1.5rem;
+  cursor: default;
+}
+
+
+
+
+/* Fjerner uønsket ramme når kvadratet får fokus via tab eller klikk */
+.gender-label:focus,
+.gender-label:focus-visible,
+.gender-square:focus,
+.gender-square:focus-visible {
+  outline: none;
 }
