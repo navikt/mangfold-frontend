@@ -36,6 +36,7 @@ jobs:
         id: docker-build-push-frontend
         with:
           team: heda
+          docker_context: .
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
@@ -44,4 +45,4 @@ jobs:
         env:
           CLUSTER: dev-gcp                     
           RESOURCE: .nais/app.yaml          
-          VAR: image=${{ steps.docker-build-push-frontend.outputs.image }}
+          IMAGE: ${{ steps.docker-build-push-frontend.outputs.image }}
