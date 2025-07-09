@@ -1,6 +1,16 @@
 name: Build and deploy
 
 on:
+  workflow_dispatch: # Allow manually triggered workflow run
+    inputs:
+      deploy-dev:
+        description: "Deploy til dev"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - true
+          - false
   push:
     branches:
       - main
