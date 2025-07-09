@@ -91,10 +91,10 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
 
 
 export default function StatistikkPanel() {
+  const [showTable, setShowTable] = useState(false);
   const [selectedYear] = useState(new Date().getFullYear());
   const yearRange: [number, number] = [selectedYear, selectedYear];
   const [hovered, setHovered] = useState<string | null>(null);
-  const [showTable, setShowTable] = useState(false);
   const [aggregatedData, setAggregatedData] = useState<AggregatedAvdeling[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,6 +137,7 @@ export default function StatistikkPanel() {
       <Heading level="3" size="small" spacing>
         Oversikt over kvinner og menn i hver avdeling – {yearRange[0]}
       </Heading>
+      
       <p>
         Her kan du se kjønnsfordelingen i hver avdeling basert på data fra inneværende år. Oversikten viser hvor mange kvinner
         og menn som jobber i hver avdeling – både som prosentandel og i antall personer. Dette gir et tydelig bilde av hvordan
@@ -144,75 +145,93 @@ export default function StatistikkPanel() {
         likestilling og mangfold.
       </p>
 
-      <div className="control-row">
-        <div style={{ display: "flex", justifyContent: "center", flex: 1 }}>
-          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-            <span
-              className="gender-label"
-              onMouseEnter={() => setHovered("female")}
-              onMouseLeave={() => setHovered(null)}
-            >
+      <div style={{ position: 'relative' }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          display: 'flex', 
+          justifyContent: 'center',
+          zIndex: 1
+        }}>
+          {!showTable && (
+            <div style={{ 
+              display: "flex", 
+              gap: "1.5rem", 
+              alignItems: "center",
+              background: 'white',
+              padding: '4px 12px',
+              borderRadius: '4px'
+            }}>
               <span
-                className="gender-square"
-                style={{ background: "#38a169", outline: hovered === "female" ? "0px solid black" : "none" }}
-              />
-              Kvinner
-            </span>
+                className="gender-label"
+                onMouseEnter={() => setHovered("female")}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <span
+                  className="gender-square"
+                  style={{ background: "#38a169" }}
+                />
+                Kvinner
+              </span>
 
-            <span
-              className="gender-label"
-              onMouseEnter={() => setHovered("male")}
-              onMouseLeave={() => setHovered(null)}
-            >
               <span
-                className="gender-square"
-                style={{ background: "#1e293b", outline: hovered === "male" ? "0px solid black" : "none" }}
-              />
-              Menn
-            </span>
-          </div>
+                className="gender-label"
+                onMouseEnter={() => setHovered("male")}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <span
+                  className="gender-square"
+                  style={{ background: "#1e293b" }}
+                />
+                Menn
+              </span>
+            </div>
+          )}
         </div>
 
-        <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
-          {showTable ? "Vis som figur" : "Vis som tabell"}
-        </Button>
+        <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 1 }}>
+          <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
+            {showTable ? "Vis som figur" : "Vis som tabell"}
+          </Button>
+        </div>
+
+        {loading ? (
+          <p>Laster avdelingsdata...</p>
+        ) : error ? (
+          <p style={{ color: "red" }}>{error}</p>
+        ) : showTable ? (
+          <ChartTableView showTable={true} aggregatedData={aggregatedData} />
+        ) : (
+          <ResponsiveContainer width="100%" height={550}>
+            <BarChart
+              data={aggregatedData}
+              margin={{ top: 30, right: 20, left: 20, bottom: 150 }}
+            >
+              <XAxis
+                dataKey="label"
+                interval={0}
+                tick={<CustomizedAxisTick />}
+              />
+              <YAxis tickFormatter={(value) => `${value}%`} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar
+                dataKey="female"
+                name="Kvinner"
+                fill="#38a169"
+                fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3}
+              />
+              <Bar
+                dataKey="male"
+                name="Menn"
+                fill="#333c46"
+                fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
-
-
-      {loading ? (
-        <p>Laster avdelingsdata...</p>
-      ) : error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : showTable ? (
-        <ChartTableView showTable={true} aggregatedData={aggregatedData} />
-      ) : (
-        <ResponsiveContainer width="100%" height={550}>
-          <BarChart
-            data={aggregatedData}
-            margin={{ top: 30, right: 20, left: 20, bottom: 150 }}
-          >
-            <XAxis
-              dataKey="label"
-              interval={0}
-              tick={<CustomizedAxisTick />}
-            />
-            <YAxis tickFormatter={(value) => `${value}%`} />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="female"
-              name="Kvinner"
-              fill="#38a169"
-              fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3}
-            />
-            <Bar
-              dataKey="male"
-              name="Menn"
-              fill="#333c46"
-              fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      )}
     </div>
   );
 }
