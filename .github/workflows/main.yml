@@ -53,6 +53,7 @@ jobs:
       - name: Deploy to Nais
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-gcp                     
-          RESOURCE: .nais/app.yaml          
-          IMAGE: ${{ steps.docker-build-push-frontend.outputs.image }}
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/app.yaml
+          WORKLOAD_IMAGE: ${{ steps.docker-build-push-frontend.outputs.image }}
+          TELEMETRY: ${{ steps.docker-build-push-frontend.outputs.telemetry }}          
