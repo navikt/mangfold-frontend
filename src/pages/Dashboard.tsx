@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@navikt/ds-react";
 import DashboardContent from "../components/DashboardContent";
 import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
 import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
@@ -7,24 +6,40 @@ import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
 // import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<"hoved" | "nyrekruttering" | "kategori" | "data">("hoved");
+  const [activeTab, setActiveTab] = useState<"hoved" | "kategori" | "data">("hoved");
+
+  const navLinkStyle = (tab: string) => ({
+    color: activeTab === tab ? "#0056b4" : "#333",
+    textDecoration: "none",
+    cursor: "pointer",
+    borderBottom: activeTab === tab ? "3px solid #0056b4" : "none",
+    paddingBottom: "0.5rem",
+    transition: "color 0.2s ease",
+  });
 
   return (
-    <main style={{ padding: "2rem" }}>
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
-        <Button
-          variant={activeTab === "hoved" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("hoved")}
-        >
+    <main>
+      {/* Subnavigation */}
+      <nav
+        style={{
+          backgroundColor: "#ffffff",
+          padding: "1rem 2rem",
+          display: "flex",
+          gap: "2rem",
+          fontWeight: 600,
+          fontSize: "1.1rem",
+          borderBottom: "1px solid #D0D5DD",
+        }}
+      >
+        <span onClick={() => setActiveTab("hoved")} style={navLinkStyle("hoved")}>
           Hovedoversikt
-        </Button>
-
-        <Button
-          variant={activeTab === "kategori" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("kategori")}
-        >
+        </span>
+        <span onClick={() => setActiveTab("kategori")} style={navLinkStyle("kategori")}>
           Kategorier
-        </Button>
+        </span>
+        <span onClick={() => setActiveTab("data")} style={navLinkStyle("data")}>
+          Om data
+        </span>
 
         {/* <Button
           variant={activeTab === "nyrekruttering" ? "primary" : "secondary"}
@@ -40,20 +55,17 @@ export default function Dashboard() {
             </Button>
           </span>
         </Tooltip> */}
+      </nav>
 
-        <Button
-          variant={activeTab === "data" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("data")}
-        >
-          Om data
-        </Button>
+      {/* Innholdet */}
+      <div style={{ padding: "2rem" }}>
+        {activeTab === "hoved" && <DashboardContent />}
+        {activeTab === "kategori" && <StatistikkExplorerTab />}
+        {activeTab === "data" && <DatagrunnlagInfo />}
+        {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
+        {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
       </div>
-
-      {activeTab === "hoved" && <DashboardContent />}
-      {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
-      {activeTab === "data" && <DatagrunnlagInfo />}
-      {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
-      {activeTab === "kategori" && <StatistikkExplorerTab />}
     </main>
   );
 }
+
