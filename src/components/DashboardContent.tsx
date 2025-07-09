@@ -25,8 +25,8 @@ export default function DashboardContent() {
   const femaleCount = statistikk?.find((s) => s.kjonn === "kvinne")?.antall ?? 0;
   const maleCount = statistikk?.find((s) => s.kjonn === "mann")?.antall ?? 0;
   const total = femaleCount + maleCount;
-  const femalePercentage = total ? Math.round((femaleCount / total) * 100) : 0;
-  const malePercentage = total ? Math.round((maleCount / total) * 100) : 0;
+  const femalePercentage = total ? Number(((femaleCount / total) * 100).toFixed(2)) : 0;
+  const malePercentage = total ? Number(((maleCount / total) * 100).toFixed(2)) : 0;
 
   return (
     <section className="dashboard-body">
