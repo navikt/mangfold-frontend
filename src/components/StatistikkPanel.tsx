@@ -89,6 +89,33 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   return null;
 }
 
+async function fetchWithTimeout(url: string, timeout = 15000, retries = 3) {
+  let attempt = 0;
+  
+  while (attempt < retries) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      const response = await fetch(url, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error("Kunne ikke hente data");
+      }
+      
+      return await response.json();
+    } catch (error) {
+      attempt++;
+      if (attempt === retries) throw error;
+      // Vent litt lengre mellom hvert forsøk
+      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+    }
+  }
+}
 
 export default function StatistikkPanel() {
   const [showTable, setShowTable] = useState(false);
@@ -104,11 +131,13 @@ export default function StatistikkPanel() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("https://mangfold-backend.intern.nav.no/kjonn-per-avdeling");
-        if (!res.ok) throw new Error("Kunne ikke hente kjønnsdata for avdelinger");
-        const data: ApiAvdeling[] = await res.json();
+        
+        const data = await fetchWithTimeout(
+          "https://mangfold-backend.intern.nav.no/kjonn-per-avdeling",
+          15000  // 15 sekunder timeout
+        );
 
-        const aggregated = data.map((entry) => {
+        const aggregated = data.map((entry: ApiAvdeling) => {
           const femaleCount = entry.kjonnAntall.kvinne ?? 0;
           const maleCount = entry.kjonnAntall.mann ?? 0;
           const total = femaleCount + maleCount;
@@ -123,7 +152,8 @@ export default function StatistikkPanel() {
 
         setAggregatedData(aggregated);
       } catch (e: any) {
-        setError(e.message);
+        setError("Kunne ikke laste data. Prøver igjen...");
+        console.error("Error:", e);
       } finally {
         setLoading(false);
       }
@@ -131,6 +161,17 @@ export default function StatistikkPanel() {
 
     fetchAvdelingsData();
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <p>Laster data...</p>
+        <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "0.5rem" }}>
+          Dette kan ta noen sekunder
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="chart-toggle-wrapper">
