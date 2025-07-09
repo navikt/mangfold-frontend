@@ -11,6 +11,8 @@ const props = {
   env: "dev",
   params: {
     //simple: true,
+    simpleHeader: true,
+    simpleFooter: false, 
   },
 };
 
