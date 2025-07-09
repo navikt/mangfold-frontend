@@ -9,7 +9,7 @@ export function useAlderPerStilling() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await fetch('/api/aldersgruppe-per-stilling');
+                const response = await fetch('https://mangfold-backend.intern.nav.no/aldersgruppe-per-stilling');
                 const rawData: RawAlderPerStillingData[] = await response.json();
 
                 // Grupper data etter stillingstittel
