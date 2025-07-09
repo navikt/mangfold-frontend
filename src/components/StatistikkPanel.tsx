@@ -145,6 +145,16 @@ export default function StatistikkPanel() {
         likestilling og mangfold.
       </p>
 
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        marginBottom: '1rem' 
+      }}>
+        <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
+          {showTable ? "Vis som figur" : "Vis som tabell"}
+        </Button>
+      </div>
+
       <div style={{ position: 'relative' }}>
         <div style={{ 
           position: 'absolute', 
@@ -189,12 +199,6 @@ export default function StatistikkPanel() {
               </span>
             </div>
           )}
-        </div>
-
-        <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 1 }}>
-          <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
-            {showTable ? "Vis som figur" : "Vis som tabell"}
-          </Button>
         </div>
 
         {loading ? (
