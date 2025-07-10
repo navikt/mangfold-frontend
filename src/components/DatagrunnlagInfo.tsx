@@ -51,7 +51,8 @@ export default function DatagrunnlagInfo() {
           </Heading>
           <BodyShort>
             Denne landingssiden har vært en del av et prosjekt for sommerstudentene i 2025.
-            Dataene representerer et øyeblikksbilde av ansatte i Arbeids- og velferdsdirektoratet.
+            Dataene representerer et øyeblikksbilde av nåværende ansatte i Arbeids- og velferdsdirektoratet.
+            Siden er ment for innsikt og overblikk over Navs interne mangfold hos ansatte, og er bare nyttig som statistikk på høyt nivå.
           </BodyShort>
         </div>
       </div>
@@ -65,8 +66,7 @@ export default function DatagrunnlagInfo() {
             Kilder
           </Heading>
           <BodyShort>
-            Dataene er hentet fra NAVs HR-system og teamkatalog via datavarehuset.
-            En servicebruker i NAVs datavarehus henter og prosesserer dataene.
+            Dataene er hentet fra NAVs HR-system og koblet opp mot data fra teamkatalogen. Det brukes en servicebruker i NAVs datavarehus for å hente ut data til BigQuery etter prosessering og aggregering, som presenteres i dashboardet.
           </BodyShort>
         </div>
       </div>
@@ -79,26 +79,33 @@ export default function DatagrunnlagInfo() {
           <Heading level="4" size="xsmall" spacing>
             Datatyper og kategorier
           </Heading>
-          <BodyShort>Datasettet inneholder følgende opplysningstyper om ansatte i NAV:</BodyShort>
+          <BodyShort>Det opprinnelige datasettet inneholder følgende opplysningstyper om ansatte i NAV:</BodyShort>
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
             <li><BodyShort>Alder (gruppert i aldersgrupper)</BodyShort></li>
             <li><BodyShort>Ansiennitet (gruppert)</BodyShort></li>
             <li><BodyShort>Kjønn</BodyShort></li>
             <li><BodyShort>Avdeling og seksjonstilhørighet</BodyShort></li>
-            <li><BodyShort>Stillingsnavn og ledernivå</BodyShort></li>
+            <li><BodyShort>Stillingsnavn og nivå i Navs hierarki</BodyShort></li>
             <li><BodyShort>Roller og teamtilhørighet fra teamkatalogen</BodyShort></li>
           </ul>
           <BodyShort style={{ marginTop: "0.75rem" }}>
-            Dataene er aggregert etter:
+            Det finnes to hovedkilder for ulike data:
           </BodyShort>
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
-            <li><BodyShort>HR-data: avdeling, seksjon og stilling</BodyShort></li>
+            <li>
+              <BodyShort>
+                Ansettelses-data: avdeling, seksjon og stilling. Én person er ansatt ett sted med en type stilling.
+              </BodyShort>
+            </li>
             <li>
               <BodyShort>
                 Teamkatalog-data: seksjon/område og roller. Én person kan ha flere roller og tilhørighet til flere seksjoner.
               </BodyShort>
             </li>
           </ul>
+          <BodyShort style={{ marginTop: "0.75rem" }}>
+            Data fra personalsystemet er mer komplett og entydig enn data fra teamkatalogen, men reflekterer ikke like godt hvordan folk selv synes de jobber i Nav. Noens stillingstittel sier lite om deres daglige oppgaver, men kan gi innsikt i deres formelle posisjon. Rollen deres, fra teamkatalogen, sier mer om hvordan folk jobber daglig.
+          </BodyShort>
         </div>
       </div>
 
@@ -111,9 +118,9 @@ export default function DatagrunnlagInfo() {
             Hvordan dataene er behandlet
           </Heading>
           <BodyShort>
-            Dataene er pseudonymisert og filtrert for å inkludere kun faste ansatte med status "Nav Statlig".
-            Personopplysningene er aggregert og presenteres kun på gruppenivå – det er ikke mulig å identifisere enkeltpersoner.
-            Daglig oppdatering og prosessering skjer med Python og Airflow.
+            Dataene er <strong>pseudonymisert</strong>, og filtrert for kun å inkludere nåværende faste ansatte i direktoratet. Dataen inkluderer ikke tidligere ansatte. Personopplysningene er <strong>aggregert</strong> og presenteres kun på gruppenivå. Det skal ikke være mulig å identifisere enkeltpersoner.
+
+            Python og Airflow benyttes for daglig oppdatering og prosessering.
           </BodyShort>
         </div>
       </div>
@@ -127,10 +134,10 @@ export default function DatagrunnlagInfo() {
             Begrensninger
           </Heading>
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
-            <li><BodyShort>Midlertidige, eksterne og kommunale ansatte er ikke inkludert</BodyShort></li>
-            <li><BodyShort>Seksjonstilhørighet kan komme fra enten HR-systemet eller teamkatalogen</BodyShort></li>
-            <li><BodyShort>Ansatte med flere roller/seksjoner telles i hver relevante kategori</BodyShort></li>
-            <li><BodyShort>"Ukjent" brukes dersom informasjon mangler i kildesystemene</BodyShort></li>
+            <li><BodyShort>Eksterne eller kommunale ansatte er ikke inkludert, slik som konsulenter.</BodyShort></li>
+            <li><BodyShort>Seksjonstilhørighet kan komme fra enten HR-systemet eller teamkatalogen.</BodyShort></li>
+            <li><BodyShort>Personer med flere roller eller seksjonstilhørigheter blir telt flere ganger for hver relevante kategori.</BodyShort></li>
+            <li><BodyShort>"Ukjent", eller en deskriptiv variant, brukes som verdi når informasjon mangler i kildesystemene.</BodyShort></li>
           </ul>
         </div>
       </div>
@@ -144,7 +151,8 @@ export default function DatagrunnlagInfo() {
             Oppdatering
           </Heading>
           <BodyShort>
-            Dataene ble sist oppdatert: 20. juni 2025. Oppdateres daglig via automatiserte skript (Airflow og Python).
+            Dataene ble sist oppdatert: <strong>20. juni 2025</strong>.
+            Daglig oppdatering skjer via automatiserte skript (Python via Airflow).
           </BodyShort>
         </div>
       </div>
