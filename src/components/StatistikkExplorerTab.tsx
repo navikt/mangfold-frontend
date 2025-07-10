@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Heading, Label, Button, BodyShort } from "@navikt/ds-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Heading, Label, Button } from "@navikt/ds-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import ReactSelect from "react-select";
 
 export default function StatistikkExplorerTab() {
@@ -31,8 +39,7 @@ export default function StatistikkExplorerTab() {
     fetchData();
   }, []);
 
-  const distinct = (arr: any[]) =>
-    Array.from(new Set(arr.map((val) => (typeof val === "string" ? val.trim() : "")).filter((v) => v)));
+  const distinct = (arr: any[]) => Array.from(new Set(arr.map((val) => (typeof val === "string" ? val.trim() : "")).filter((v) => v)));
 
   const allDepartments = useMemo(() => distinct(rawData.map((d) => d.avdeling)), [rawData]);
 
@@ -49,16 +56,33 @@ export default function StatistikkExplorerTab() {
     return map;
   }, [rawData]);
 
-  const allOptions = useMemo(
-    () => ({
-      kjonn: distinct(rawData.map((d) => d.kjonn)),
-      alder: distinct(rawData.map((d) => d.aldersgruppe)),
-      ansiennitet: distinct(rawData.map((d) => d.ansiennitetsgruppe)),
-      lederniva: distinct(rawData.map((d) => d.lederniva)),
-      stilling: distinct(rawData.map((d) => d.stillingsnavn)),
-    }),
-    [rawData]
-  );
+  useEffect(() => {
+    setSelectedSections([]);
+  }, [selectedDepartments]);
+
+  useEffect(() => {
+    setSelectedKjonn([]);
+    setSelectedAlder([]);
+    setSelectedAnsiennitet([]);
+    setSelectedLederniva([]);
+    setSelectedStilling([]);
+  }, [selectedDepartments, selectedSections]);
+
+  const allOptions = useMemo(() => {
+    const relevantData = rawData.filter((d) => {
+      const matcherAvdeling = selectedDepartments.length === 0 || selectedDepartments.includes(d.avdeling);
+      const matcherSeksjon = selectedSections.length === 0 || selectedSections.includes(d.seksjon);
+      return matcherAvdeling && matcherSeksjon;
+    });
+
+    return {
+      kjonn: distinct(relevantData.map((d) => d.kjonn)),
+      alder: distinct(relevantData.map((d) => d.aldersgruppe)),
+      ansiennitet: distinct(relevantData.map((d) => d.ansiennitetsgruppe)),
+      lederniva: distinct(relevantData.map((d) => d.lederniva)),
+      stilling: distinct(relevantData.map((d) => d.stillingsnavn)),
+    };
+  }, [rawData, selectedDepartments, selectedSections]);
 
   const filteredData = useMemo(() => {
     if (selectedDepartments.length === 0) return [];
@@ -84,49 +108,42 @@ export default function StatistikkExplorerTab() {
     });
   }, [rawData, selectedDepartments, selectedSections, selectedKjonn, selectedAlder, selectedAnsiennitet, selectedLederniva, selectedStilling]);
 
+  const groupKey = selectedSections.length > 0 ? "seksjon" : "avdeling";
+
   const chartData = useMemo(() => {
-    const groupKey = selectedSections.length > 0 ? "seksjon" : "avdeling";
+    const map: Record<string, Record<string, number>> = {};
+    const grupper = new Set<string>();
+    const undergrupper = new Set<string>();
 
-    // Hent alle grupper som burde vises – også de uten data etter filtrering
-    const relevanteGrupper = selectedSections.length > 0
-      ? selectedSections
-      : selectedDepartments;
-
-    const map = new Map<string, { gruppe: string; kvinne: number; mann: number; ukjent: number; total: number }>();
-
-    // Sett opp alle grupper med 0-data
-    relevanteGrupper.forEach((gruppe) => {
-      map.set(gruppe, { gruppe, kvinne: 0, mann: 0, ukjent: 0, total: 0 });
-    });
-
-    // Legg til filtrert data i riktige grupper
     filteredData.forEach((d) => {
-      const key = d[groupKey]?.trim() || "Ukjent";
-      const kjonn = d.kjonn?.trim() || "Ukjent";
+      const gruppe = d[groupKey] ?? "Ukjent";
+      const kjonn = d.kjonn ?? "Ukjent";
       const antall = d.antall ?? 0;
-
-      if (!map.has(key)) {
-        map.set(key, { gruppe: key, kvinne: 0, mann: 0, ukjent: 0, total: 0 });
-      }
-
-      const entry = map.get(key)!;
-      if (kjonn === "Kvinne") entry.kvinne += antall;
-      else if (kjonn === "Mann") entry.mann += antall;
-      else entry.ukjent += antall;
-
-      entry.total += antall;
+      if (!map[gruppe]) map[gruppe] = {};
+      map[gruppe][kjonn] = (map[gruppe][kjonn] || 0) + antall;
+      grupper.add(gruppe);
+      undergrupper.add(kjonn);
     });
 
-    // Gjør klart chart-data, inkludert tomme grupper
-    return Array.from(map.values()).map(({ gruppe, kvinne, mann, ukjent, total }) => ({
-      gruppe,
-      kvinne: total > 0 ? (kvinne / total) * 100 : 0,
-      mann: total > 0 ? (mann / total) * 100 : 0,
-      ukjent: total > 0 ? (ukjent / total) * 100 : 0,
-      harIngenData: total === 0,
-    }));
-  }, [filteredData, selectedDepartments, selectedSections]);
+    return {
+      data: Array.from(grupper).map((g) => ({
+        gruppe: g,
+        ...map[g],
+      })),
+      undergrupper: Array.from(undergrupper),
+    };
+  }, [filteredData, groupKey]);
 
+  const farger = [
+    "#339989", "#232C3D", "#D0D0D0", "#7fc97f", "#beaed4", "#fdc086", "#ffff99", "#386cb0",
+  ];
+  const fargeMap = useMemo(() => {
+    const result: Record<string, string> = {};
+    chartData.undergrupper.forEach((val, i) => {
+      result[val] = farger[i % farger.length];
+    });
+    return result;
+  }, [chartData.undergrupper]);
 
   const harValgteFilter = useMemo(
     () =>
@@ -155,40 +172,66 @@ export default function StatistikkExplorerTab() {
     options: string[],
     selected: string[],
     setSelected: (val: string[]) => void,
-    noOptionsMessage?: string
-  ) => (
-    <div style={{ minWidth: "250px" }}>
-      <Label style={{ display: "block", marginBottom: "0.25rem" }}>{label}</Label>
-      <ReactSelect
-        isMulti
-        placeholder={`Velg ${label.toLowerCase()}...`}
-        options={options.map((o) => ({ value: o, label: o }))}
-        value={selected.map((o) => ({ value: o, label: o }))}
-        onChange={(selectedOptions) => setSelected(selectedOptions.map((o) => o.value))}
-        noOptionsMessage={() => noOptionsMessage || "Ingen alternativer"}
-      />
-    </div>
-  );
+    noOptionsMessage?: string,
+    showSelectAll: boolean = true
+  ) => {
+    const selectAllValue = "__ALL__";
+    const selectAllOption = { label: `Velg alle ${label.toLowerCase()}`, value: selectAllValue };
+    const optionObjects = options.map((o) => ({ value: o, label: o }));
+
+    const handleChange = (selectedOptions: any) => {
+      if (!selectedOptions || selectedOptions.length === 0) {
+        setSelected([]);
+        return;
+      }
+      const values = selectedOptions.map((o: any) => o.value);
+      const isSelectAllSelected = values.includes(selectAllValue);
+
+      if (isSelectAllSelected) {
+        if (selected.length !== options.length) {
+          setSelected(options);
+        } else {
+          setSelected([]);
+        }
+      } else {
+        setSelected(values);
+      }
+    };
+
+    const customOptions = showSelectAll ? [selectAllOption, ...optionObjects] : optionObjects;
+    const isAllSelected = selected.length === options.length;
+    const currentValue = selected.length === 0
+      ? []
+      : isAllSelected
+        ? [selectAllOption, ...optionObjects]
+        : optionObjects.filter((o) => selected.includes(o.value));
+
+    return (
+      <div style={{ minWidth: "250px" }}>
+        <Label style={{ display: "block", marginBottom: "0.25rem" }}>{label}</Label>
+        <ReactSelect
+          isMulti
+          placeholder={`Velg ${label.toLowerCase()}...`}
+          options={customOptions}
+          value={currentValue}
+          onChange={handleChange}
+          closeMenuOnSelect={false}
+          hideSelectedOptions={false}
+          noOptionsMessage={() => noOptionsMessage || "Ingen alternativer"}
+        />
+      </div>
+    );
+  };
 
   return (
     <div>
       <Heading level="2" size="medium">Statistikkfilter</Heading>
-
       <p style={{ marginBottom: "3rem" }}>
-        Denne visningen gir deg oversikt over kjønnsfordeling i ulike grupper. Velg én avdeling for å starte. Når du har valgt en avdeling, kan du splitte opp visningen per seksjon ved å bruke seksjonsfilteret.
+        Denne visningen gir deg oversikt over grupperte data med egne farger per kjønn (eller annen kategori).
       </p>
-
       <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginBottom: "6rem", alignItems: "flex-end" }}>
         {multiSelect("Avdeling(er)", allDepartments, selectedDepartments, setSelectedDepartments)}
-
-        {multiSelect(
-          "Seksjon(er)",
-          selectedDepartments.flatMap((dep) => sectionOptionsByDepartment[dep] || []),
-          selectedSections,
-          setSelectedSections,
-          selectedDepartments.length === 0 ? "Velg avdeling(er) først..." : undefined
-        )}
-
+        {multiSelect("Seksjon(er)", selectedDepartments.flatMap((dep) => sectionOptionsByDepartment[dep] || []), selectedSections, setSelectedSections, selectedDepartments.length === 0 ? "Velg avdeling(er) først..." : undefined)}
         {multiSelect("Kjønn", allOptions.kjonn, selectedKjonn, setSelectedKjonn)}
         {multiSelect("Alder", allOptions.alder, selectedAlder, setSelectedAlder)}
         {multiSelect("Ansiennitet", allOptions.ansiennitet, selectedAnsiennitet, setSelectedAnsiennitet)}
@@ -208,33 +251,30 @@ export default function StatistikkExplorerTab() {
         <p style={{ marginTop: "2rem" }}>Vennligst velg én avdeling for å se statistikk.</p>
       ) : (
         <>
-          {selectedDepartments.length > 0 && selectedSections.length === 0 && (
-            <BodyShort style={{ marginBottom: "1rem" }}>
-              Du kan splitte opp avdelingen i seksjoner ved å bruke seksjonsfilteret.
-            </BodyShort>
-          )}
-
-
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData} margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
-              <XAxis dataKey="gruppe" />
-              <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(value: any) => `${value.toFixed(1)}%`} />
-              <Bar dataKey="kvinne" stackId="a" name="Kvinner" fill="#339989" />
-              <Bar dataKey="mann" stackId="a" name="Menn" fill="#232C3D" />
-              <Bar dataKey="ukjent" stackId="a" name="Ukjent" fill="#D0D0D0" />
+            <BarChart data={chartData.data} margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
+              <XAxis
+                dataKey="gruppe"
+                angle={chartData.data.length > 12 ? -45 : 0}
+                textAnchor={chartData.data.length > 12 ? "end" : "middle"}
+                interval={0}
+                height={chartData.data.length > 12 ? 80 : 40}
+                tick={{ fontSize: 8 }}
+              />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {chartData.undergrupper.map((key) => (
+                <Bar
+                  key={key}
+                  dataKey={key}
+                  stackId="a"
+                  name={key}
+                  fill={fargeMap[key]}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
-
-          {chartData.some((d) => d.harIngenData) && (
-            <div style={{ marginTop: "1rem" }}>
-              <BodyShort>
-                Følgende {selectedSections.length > 0 ? "seksjoner" : "avdelinger"} har ingen treff for gjeldende filter:{" "}
-                {chartData.filter((d) => d.harIngenData).map((d) => d.gruppe).join(", ")}.
-              </BodyShort>
-            </div>
-          )}
-
         </>
       )}
     </div>
