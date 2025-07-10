@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMetaData } from "../data/useMetaData";
 import DashboardContent from "../components/DashboardContent";
 import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
 import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
@@ -7,6 +8,7 @@ import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"hoved" | "kategori" | "data">("hoved");
+  const { lastUpdated } = useMetaData();
 
   const navLinkStyle = (tab: string) => ({
     color: activeTab === tab ? "#0056b4" : "#333",
@@ -25,36 +27,50 @@ export default function Dashboard() {
           backgroundColor: "#ffffff",
           padding: "1rem 2rem",
           display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           gap: "2rem",
           fontWeight: 600,
           fontSize: "1.1rem",
           borderBottom: "1px solid #D0D5DD",
         }}
       >
-        <span onClick={() => setActiveTab("hoved")} style={navLinkStyle("hoved")}>
-          Hovedoversikt
-        </span>
-        <span onClick={() => setActiveTab("kategori")} style={navLinkStyle("kategori")}>
-          Kategorier
-        </span>
-        <span onClick={() => setActiveTab("data")} style={navLinkStyle("data")}>
-          Om data
-        </span>
-
-        {/* <Button
-          variant={activeTab === "nyrekruttering" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("nyrekruttering")}
-        >
-          Nyrekruttering
-        </Button> */}
-
-        {/* <Tooltip content="Oppsigelse er ikke tilgjengelig fordi historiske data mangler.">
-          <span>
-            <Button variant="secondary" disabled>
-              Oppsigelse
-            </Button>
+        <div style={{ display: "flex", gap: "2rem" }}>
+          <span onClick={() => setActiveTab("hoved")} style={navLinkStyle("hoved")}>
+            Hovedoversikt
           </span>
-        </Tooltip> */}
+          <span onClick={() => setActiveTab("kategori")} style={navLinkStyle("kategori")}>
+            Kategorier
+          </span>
+          <span onClick={() => setActiveTab("data")} style={navLinkStyle("data")}>
+            Om data
+          </span>
+
+          {/* <Button
+            variant={activeTab === "nyrekruttering" ? "primary" : "secondary"}
+            onClick={() => setActiveTab("nyrekruttering")}
+          >
+            Nyrekruttering
+          </Button> */}
+
+          {/* <Tooltip content="Oppsigelse er ikke tilgjengelig fordi historiske data mangler.">
+            <span>
+              <Button variant="secondary" disabled>
+                Oppsigelse
+              </Button>
+            </span>
+          </Tooltip> */}
+        </div>
+
+        {lastUpdated && (
+          <span style={{ 
+            fontSize: "0.9rem", 
+            color: "#666", 
+            fontWeight: "normal" 
+          }}>
+            Sist oppdatert: {lastUpdated}
+          </span>
+        )}
       </nav>
 
       {/* Innholdet */}

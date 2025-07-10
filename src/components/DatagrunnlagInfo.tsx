@@ -1,4 +1,5 @@
 import { Heading, BodyShort } from "@navikt/ds-react";
+import { useMetaData } from "../data/useMetaData";
 import {
   CalendarIcon,
   ArchiveIcon,
@@ -9,6 +10,8 @@ import {
 } from "@navikt/aksel-icons";
 
 export default function DatagrunnlagInfo() {
+  const { lastUpdated } = useMetaData();
+
   const sectionStyle = {
     display: "flex",
     gap: "1rem",
@@ -144,7 +147,9 @@ export default function DatagrunnlagInfo() {
             Oppdatering
           </Heading>
           <BodyShort>
-            Dataene ble sist oppdatert: 20. juni 2025. Oppdateres daglig via automatiserte skript (Airflow og Python).
+            {lastUpdated 
+              ? `Dataene ble sist oppdatert: ${lastUpdated}. Oppdateres daglig via automatiserte skript (Airflow og Python).`
+              : "Ingen oppdateringsinformasjon tilgjengelig."}
           </BodyShort>
         </div>
       </div>
