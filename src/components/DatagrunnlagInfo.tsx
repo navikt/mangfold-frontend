@@ -7,6 +7,8 @@ import {
   CogIcon,
   ExclamationmarkTriangleFillIcon,
   ClockIcon,
+  MonitorIcon,
+  MegaphoneIcon,
 } from "@navikt/aksel-icons";
 
 export default function DatagrunnlagInfo() {
@@ -50,12 +52,16 @@ export default function DatagrunnlagInfo() {
         </div>
         <div>
           <Heading level="4" size="xsmall" spacing>
-            Periode
+            Prosjekt
           </Heading>
           <BodyShort>
             Denne landingssiden har vært en del av et prosjekt for sommerstudentene i 2025.
+
             Dataene representerer et øyeblikksbilde av nåværende ansatte i Arbeids- og velferdsdirektoratet.
-            Siden er ment for innsikt og overblikk over Navs interne mangfold hos ansatte, og er bare nyttig som statistikk på høyt nivå.
+
+            Siden er ment for innsikt og overblikk over Navs interne mangfold hos ansatte, og er bare nyttig som statistikk på høyt nivå. Denne siden er kun ment til intern bruk, men skal være tilgjengelig for alle ansatte i direktoratet.
+
+            Merk: For øyeblikket er datagrunnlaget for dashboardet kun basert på aktivt ansatte i Nav, og kan altså ikke brukes til å studere historisk utvikling. Det er særlig ønskelig å vise mangfold i nyrekrutterte kontra overblikksbildet som er gjengitt på forsiden, men dette ville bli en særdeles misvisende fremstilling uten å inkludere personer som har sluttet f. eks. etter mindre enn ett år hos Nav. Vi har da valgt å legge inkludering av historisk data som et forbedringsprosjekt til framtidig utvikling.
           </BodyShort>
         </div>
       </div>
@@ -69,7 +75,7 @@ export default function DatagrunnlagInfo() {
             Kilder
           </Heading>
           <BodyShort>
-            Dataene er hentet fra NAVs HR-system og koblet opp mot data fra teamkatalogen. Det brukes en servicebruker i NAVs datavarehus for å hente ut data til BigQuery etter prosessering og aggregering, som presenteres i dashboardet.
+            Dataene er hentet fra Navs HR-system og koblet opp mot data fra teamkatalogen. Det brukes en servicebruker i Navs datavarehus for å hente ut data til BigQuery etter prosessering og aggregering, som presenteres i dashboardet.
           </BodyShort>
         </div>
       </div>
@@ -82,14 +88,14 @@ export default function DatagrunnlagInfo() {
           <Heading level="4" size="xsmall" spacing>
             Datatyper og kategorier
           </Heading>
-          <BodyShort>Det opprinnelige datasettet inneholder følgende opplysningstyper om ansatte i NAV:</BodyShort>
+          <BodyShort>Det opprinnelige datasettet inneholder følgende opplysningstyper om ansatte i Nav:</BodyShort>
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
             <li><BodyShort>Alder (gruppert i aldersgrupper)</BodyShort></li>
             <li><BodyShort>Ansiennitet (gruppert)</BodyShort></li>
             <li><BodyShort>Kjønn</BodyShort></li>
             <li><BodyShort>Avdeling og seksjonstilhørighet</BodyShort></li>
             <li><BodyShort>Stillingsnavn og nivå i Navs hierarki</BodyShort></li>
-            <li><BodyShort>Roller og teamtilhørighet fra teamkatalogen</BodyShort></li>
+            <li><BodyShort>Roller og seksjonstilhørighet fra teamkatalogen</BodyShort></li>
           </ul>
           <BodyShort style={{ marginTop: "0.75rem" }}>
             Det finnes to hovedkilder for ulike data:
@@ -108,6 +114,8 @@ export default function DatagrunnlagInfo() {
           </ul>
           <BodyShort style={{ marginTop: "0.75rem" }}>
             Data fra personalsystemet er mer komplett og entydig enn data fra teamkatalogen, men reflekterer ikke like godt hvordan folk selv synes de jobber i Nav. Noens stillingstittel sier lite om deres daglige oppgaver, men kan gi innsikt i deres formelle posisjon. Rollen deres, fra teamkatalogen, sier mer om hvordan folk jobber daglig.
+            
+            Seksjon kalles "område" i teamkatalogen av historiske grunner, men skal etter 2025 representere seksjon i organisasjonskartet.
           </BodyShort>
         </div>
       </div>
@@ -118,12 +126,14 @@ export default function DatagrunnlagInfo() {
         </div>
         <div>
           <Heading level="4" size="xsmall" spacing>
-            Hvordan dataene er behandlet
+            Behandling av data, personvern
           </Heading>
           <BodyShort>
             Dataene er <strong>pseudonymisert</strong>, og filtrert for kun å inkludere nåværende faste ansatte i direktoratet. Dataen inkluderer ikke tidligere ansatte. Personopplysningene er <strong>aggregert</strong> og presenteres kun på gruppenivå. Det skal ikke være mulig å identifisere enkeltpersoner.
 
-            Python og Airflow benyttes for daglig oppdatering og prosessering.
+            Total-grupperinger med færre enn 5 personer er ikke vist da disse gir dårlig statistisk grunnlag, og også av personvernshensyn for individer. Totalgrupperingen tar hensyn til seksjoner og stillinger, og det <strong>kan</strong> altså vises data i de tilfeller der en liten gruppe tilhører en større total, siden det ikke finnes en åpenbar knytning tilbake til individer. Nav har en lovlig forpliktelse å jobbe for mangfold og likestilling for ansatte i etaten, og det er derfor gjort en oppveiing av personvernhensyn mot verdien av å tilgjengilgjøre statistikken internt.
+
+            Python og Airflow (gjennom platformen KNADA) benyttes for daglig oppdatering og prosessering.
           </BodyShort>
         </div>
       </div>
@@ -137,9 +147,12 @@ export default function DatagrunnlagInfo() {
             Begrensninger
           </Heading>
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
+            <li><BodyShort>Dataen viser bare nåværende ansatte i direktoratet. Når man slutter i direktoratet, blir man fjernet fra vårt uttrekk av data.</BodyShort></li>
             <li><BodyShort>Eksterne eller kommunale ansatte er ikke inkludert, slik som konsulenter.</BodyShort></li>
             <li><BodyShort>Seksjonstilhørighet kan komme fra enten HR-systemet eller teamkatalogen.</BodyShort></li>
-            <li><BodyShort>Personer med flere roller eller seksjonstilhørigheter blir telt flere ganger for hver relevante kategori.</BodyShort></li>
+            <li><BodyShort>Personer med flere roller eller seksjonstilhørigheter blir telt flere ganger for hver relevante kategori. Grafer med teamkatalog-tilknytning representerer altså ikke rent antall personer som finnes i direktoratet.</BodyShort></li>
+            <li><BodyShort>Grafer med data fra personalsystemet skal i motsetning svare til reelle personaltall.</BodyShort></li>
+            <li><BodyShort>Totalgrupperinger (i praksis seksjoner eller stillingsgrupper) som er for små kan ikke vises da datagrunnlaget ikke er godt nok.</BodyShort></li>
             <li><BodyShort>"Ukjent", eller en deskriptiv variant, brukes som verdi når informasjon mangler i kildesystemene.</BodyShort></li>
           </ul>
         </div>
@@ -155,12 +168,60 @@ export default function DatagrunnlagInfo() {
           </Heading>
           <BodyShort>
             {lastUpdated 
-              ? `Dataene ble sist oppdatert: <strong>${lastUpdated}</strong>.
-            Daglig oppdatering skjer via automatiserte skript (Python via Airflow).`
-              : "Ingen oppdateringsinformasjon tilgjengelig."}
+              ? (
+                  <>
+                  Dataene ble sist oppdatert: <strong>{lastUpdated}</strong>.
+
+                  Daglig oppdatering skjer gjennom automatiserte skript (Python via KNADA).
+                  </>
+                )
+              : "Venter på data om oppdateringsinformasjon..."}
           </BodyShort>
         </div>
       </div>
+
+      <div style={sectionStyle}>
+        <div style={iconWrapperStyle}>
+          <MonitorIcon aria-hidden fontSize="1.75rem" />
+        </div>
+        <div>
+          <Heading level="4" size="xsmall" spacing>
+            Teknologier
+          </Heading>
+          <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
+            <li><BodyShort>Data ETL-prosess kjøres via Python på KNADA-platformen.</BodyShort></li>
+            <li><BodyShort>Data lagres i Google BigQuery.</BodyShort></li>
+            <li><BodyShort>Denne nettsiden kjøres på nais-platformen, og bruker React til frontend og Kotlin til backend.</BodyShort></li>
+            {
+            // burde kanskje ha linker til github repositories her? 
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div style={sectionStyle}>
+        <div style={iconWrapperStyle}>
+          <MegaphoneIcon aria-hidden fontSize="1.75rem" />
+        </div>
+        <div>
+          <Heading level="4" size="xsmall" spacing>
+            Kontakt
+          </Heading>
+          <BodyShort>
+            Prosjektet er organisert under team heda. Se Slack-kanalen{" "}
+            <a
+              href="https://nav-it.slack.com/archives/C08TXNNMBAT"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ wordBreak: "break-all" }}
+            >
+              #sommerstudent-prosjekt-mangfold
+            </a>{" "}
+            for mer informasjon om prosjektet og videre organisering. Se også #team-heda.
+          </BodyShort>
+        </div>
+      </div>
+
     </div>
   );
 }
