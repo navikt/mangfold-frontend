@@ -5,6 +5,7 @@ import DepartmentSelector from "./DepartmentSelector";
 import "../css/KjonnPerSeksjonChart.css";
 import { useKjonnData } from "../data/useKjonnData";
 import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
+import { isMasked, getMaskedStyle, getMaskedValue } from "../utils/alderGruppeUtils";
 
 interface DataEntry {
   section: string;
@@ -14,6 +15,7 @@ interface DataEntry {
   male: number;
   unknown: number;
   total: number;
+  erMaskert?: boolean; // Support for masking
 }
 
 interface ChartEntry extends DataEntry {
@@ -41,6 +43,7 @@ function normalizeTo100(f: number, m: number, u: number) {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
   const entry = payload[0].payload;
+  const maskert = isMasked(entry);
 
   const Row = ({ color, label, value, percent }: { color: string; label: string; value: number; percent: number }) => (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 0" }}>
@@ -50,7 +53,7 @@ function CustomTooltip({ active, payload, label }: any) {
         }}></span>
         <span>{label}</span>
       </span>
-      <span><strong>{value}</strong> <span style={{ color: "#cbd5e1", marginLeft: 6 }}>{percent.toFixed(2)}%</span></span>
+      <span><strong>{getMaskedValue(value, maskert)}</strong> <span style={{ color: "#cbd5e1", marginLeft: 6 }}>{maskert ? "***" : percent.toFixed(2)}%</span></span>
     </div>
   );
 
@@ -58,8 +61,14 @@ function CustomTooltip({ active, payload, label }: any) {
     <div style={{
       backgroundColor: "#2d3748", color: "white", padding: "0.75rem 1rem", borderRadius: "0.5rem",
       boxShadow: "0px 2px 10px rgba(0,0,0,0.4)", fontSize: "0.9rem", maxWidth: "300px",
+      ...getMaskedStyle(maskert)
     }}>
       <div style={{ fontWeight: "600", marginBottom: "0.5rem", textTransform: "uppercase" }}>{label}</div>
+      {maskert && (
+        <div style={{ marginBottom: "0.5rem", fontStyle: "italic", color: "#cbd5e1" }}>
+          Data er maskert for denne seksjonen
+        </div>
+      )}
       <Row color="#38a169" label="Kvinne" value={entry.femaleCount} percent={entry.female} />
       <Row color="#1e293b" label="Mann" value={entry.maleCount} percent={entry.male} />
       <Row color="#d1d5db" label="Ukjent" value={entry.unknownCount} percent={entry.unknown} />
@@ -68,7 +77,7 @@ function CustomTooltip({ active, payload, label }: any) {
         display: "flex", justifyContent: "space-between", fontWeight: "bold",
       }}>
         <span>= Total</span>
-        <span>{entry.total} <span style={{ color: "#9ca3af", marginLeft: 6 }}>100%</span></span>
+        <span>{getMaskedValue(entry.total, maskert)} <span style={{ color: "#9ca3af", marginLeft: 6 }}>{maskert ? "***" : "100"}%</span></span>
       </div>
     </div>
   );

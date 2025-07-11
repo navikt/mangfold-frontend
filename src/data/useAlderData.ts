@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 
 export interface SeksjonAlder {
   avdeling: string;
+  erMaskert?: boolean; // Support for department-level masking
   seksjoner: {
     seksjon: string;
+    erMaskert?: boolean; // Support for section-level masking
     aldersgrupper: {
       [gruppe: string]: {
         kvinne?: number;
@@ -17,6 +19,7 @@ interface AlderChartEntry {
   section: string;
   department: string;
   alderGrupper: Record<string, number>;
+  erMaskert?: boolean; // Support for masking
 }
 
 export function useAlderData() {
@@ -36,10 +39,15 @@ export function useAlderData() {
               grupperSet.add(gruppe);
               grupper[gruppe] = (kjonnObj.kvinne ?? 0) + (kjonnObj.mann ?? 0);
             });
+            
+            // Maskering: Hvis avdeling eller seksjon er maskert
+            const erMaskert = Boolean(avd.erMaskert || seksjon.erMaskert);
+            
             result.push({
               section: seksjon.seksjon,
               department: avd.avdeling,
               alderGrupper: grupper,
+              erMaskert, // Include masking status
             });
           });
         });

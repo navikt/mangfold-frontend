@@ -10,6 +10,7 @@ import {
   Legend,
 } from "recharts";
 import ReactSelect from "react-select";
+import { generateDynamicAgeColors, extractUniqueAgeGroups, isMasked, getMaskedStyle, getMaskedValue } from "../utils/alderGruppeUtils";
 
 export default function StatistikkExplorerTab() {
   const [rawData, setRawData] = useState<any[]>([]);
@@ -75,9 +76,29 @@ export default function StatistikkExplorerTab() {
       return matcherAvdeling && matcherSeksjon;
     });
 
+    // Hent aldersgrupper dynamisk i stedet for hardkoding
+    const dynamicAldersgrupper = Array.from(
+      new Set(relevantData.map((d) => d.aldersgruppe).filter(Boolean))
+    ).sort((a, b) => {
+      // "Ukjent alder" skal alltid komme sist  
+      if (a.includes("Ukjent") || a.includes("ukjent")) return 1;
+      if (b.includes("Ukjent") || b.includes("ukjent")) return -1;
+      
+      // Prøv å sortere numerisk hvis mulig
+      const aNum = parseInt(a.replace(/[^0-9]/g, ''));
+      const bNum = parseInt(b.replace(/[^0-9]/g, ''));
+      
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return aNum - bNum;
+      }
+      
+      // Fallback til alfabetisk sortering
+      return a.localeCompare(b);
+    });
+
     return {
       kjonn: distinct(relevantData.map((d) => d.kjonn)),
-      alder: distinct(relevantData.map((d) => d.aldersgruppe)),
+      alder: dynamicAldersgrupper, // Bruk dynamiske aldersgrupper
       ansiennitet: distinct(relevantData.map((d) => d.ansiennitetsgruppe)),
       lederniva: distinct(relevantData.map((d) => d.lederniva)),
       stilling: distinct(relevantData.map((d) => d.stillingsnavn)),
@@ -119,8 +140,14 @@ export default function StatistikkExplorerTab() {
       const gruppe = d[groupKey] ?? "Ukjent";
       const kjonn = d.kjonn ?? "Ukjent";
       const antall = d.antall ?? 0;
+      
+      // Sjekk for maskering (erMaskert kan komme fra API-data)
+      const maskert = isMasked(d);
+      
       if (!map[gruppe]) map[gruppe] = {};
       map[gruppe][kjonn] = (map[gruppe][kjonn] || 0) + antall;
+      map[gruppe].erMaskert = maskert; // Legg til maskeringsstatus
+      
       grupper.add(gruppe);
       undergrupper.add(kjonn);
     });
@@ -128,12 +155,14 @@ export default function StatistikkExplorerTab() {
     return {
       data: Array.from(grupper).map((g) => ({
         gruppe: g,
+        erMaskert: map[g].erMaskert,
         ...map[g],
       })),
       undergrupper: Array.from(undergrupper),
     };
   }, [filteredData, groupKey]);
 
+  // Dynamiske farger basert på faktiske kategorier fra data
   const farger = [
     "#339989", "#232C3D", "#D0D0D0", "#7fc97f", "#beaed4", "#fdc086", "#ffff99", "#386cb0",
   ];
@@ -262,7 +291,37 @@ export default function StatistikkExplorerTab() {
                 tick={{ fontSize: 8 }}
               />
               <YAxis />
-              <Tooltip />
+              <Tooltip 
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  
+                  const data = payload[0].payload;
+                  const maskert = isMasked(data);
+                  
+                  return (
+                    <div style={{ 
+                      background: "#2d3748", 
+                      color: "white", 
+                      padding: "1rem", 
+                      borderRadius: "0.5rem", 
+                      fontSize: "14px",
+                      ...getMaskedStyle(maskert)
+                    }}>
+                      <div style={{ fontWeight: 600, marginBottom: 8 }}>{label}</div>
+                      {maskert && (
+                        <div style={{ marginBottom: 8, fontStyle: "italic", color: "#cbd5e1" }}>
+                          Data er maskert for denne gruppen
+                        </div>
+                      )}
+                      {payload.map((entry, index) => (
+                        <div key={index} style={{ marginBottom: 4 }}>
+                          <span style={{ color: entry.color }}>■</span> {entry.name}: {getMaskedValue(entry.value, maskert)}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}
+              />
               <Legend />
               {chartData.undergrupper.map((key) => (
                 <Bar

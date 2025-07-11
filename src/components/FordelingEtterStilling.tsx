@@ -3,6 +3,7 @@ import { Heading } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
 import { useAlderPerStilling } from "../data/useAlderPerStilling";
+import { generateDynamicAgeColors, extractUniqueAgeGroups, isMasked, getMaskedStyle, getMaskedValue } from "../utils/alderGruppeUtils";
 
 type ViewType = "kjonn" | "alder";
 
@@ -11,12 +12,8 @@ const ViewDescriptions = {
     alder: "Her ser du aldersfordelingen per stilling.",
 };
 
-const ALDER_FARGER: Record<string, string> = {
-    "<30": "#0e4d1b",
-    "30-50": "#208444",
-    "50+": "#32bf66",
-    "Ukjent alder": "#999b9d",
-};
+// VIKTIG: Aldersgrupper og deres farger hentes nå alltid dynamisk fra API-responsen
+// Hardkoding av aldersgrupper er fjernet for å støtte fleksible API-endringer
 
 function normalizePercentages(groups: Record<string, number>): Record<string, number> {
     const total = Object.values(groups).reduce((sum, val) => sum + val, 0);
@@ -39,48 +36,85 @@ function CustomTooltip({ active, payload, label }: any) {
     if (!active || !payload || !payload.length) return null;
     const entry = payload[0].payload;
     const isGender = "femaleCount" in entry;
-    const ALDER_REKKEFOLGE = ["30-50", "50+", "<30", "Ukjent alder"];
+    const isSectionMasked = isMasked(entry);
+    
+    // For aldersdata: Hent aldersgrupper dynamisk fra entry.alderGrupper
+    const alderGrupperFromEntry = isGender ? [] : Object.keys(entry.alderGrupper ?? {}).sort((a, b) => {
+        // "Ukjent alder" skal alltid komme sist  
+        if (a.includes("Ukjent") || a.includes("ukjent")) return 1;
+        if (b.includes("Ukjent") || b.includes("ukjent")) return -1;
+        
+        // Prøv å sortere numerisk hvis mulig
+        const aNum = parseInt(a.replace(/[^0-9]/g, ''));
+        const bNum = parseInt(b.replace(/[^0-9]/g, ''));
+        
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return aNum - bNum;
+        }
+        
+        // Fallback til alfabetisk sortering
+        return a.localeCompare(b);
+    });
 
     const total = isGender
         ? (entry.femaleCount ?? 0) + (entry.maleCount ?? 0) + (entry.unknownCount ?? 0)
         : (Object.values(entry.alderGrupper ?? {}) as number[]).reduce((sum, val) => sum + val, 0);
 
     return (
-        <div style={{ background: "#2d3748", color: "white", padding: "1rem", borderRadius: "0.5rem", fontSize: "14px", lineHeight: "1.6", maxWidth: "300px" }}>
+        <div style={{ 
+            background: "#2d3748", 
+            color: "white", 
+            padding: "1rem", 
+            borderRadius: "0.5rem", 
+            fontSize: "14px", 
+            lineHeight: "1.6", 
+            maxWidth: "300px",
+            ...getMaskedStyle(isSectionMasked)
+        }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>{label}</div>
+            {isSectionMasked && (
+                <div style={{ marginBottom: 8, fontStyle: "italic", color: "#cbd5e1" }}>
+                    Data er maskert for denne stillingen
+                </div>
+            )}
             {isGender ? (
                 <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                         <span style={{ width: 10, height: 10, borderRadius: 2, background: "#38a169", display: "inline-block" }} />
-
-                        <span>Kvinne <strong>{entry.female}%</strong> ({entry.femaleCount} personer)</span>
+                        <span>Kvinne <strong>{isSectionMasked ? "***" : entry.female}%</strong> ({getMaskedValue(entry.femaleCount, isSectionMasked)} personer)</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: entry.unknownCount > 0 ? 4 : 0 }}>
                         <span style={{ width: 10, height: 10, borderRadius: 2, background: "#1e293b", display: "inline-block" }} />
-                        <span>Mann <strong>{entry.male}%</strong> ({entry.maleCount} personer)</span>
+                        <span>Mann <strong>{isSectionMasked ? "***" : entry.male}%</strong> ({getMaskedValue(entry.maleCount, isSectionMasked)} personer)</span>
                     </div>
                     {entry.unknownCount > 0 && (
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#999b9d", display: "inline-block" }} />
-                            <span>Ukjent <strong>{entry.unknown}%</strong> ({entry.unknownCount} personer)</span>
+                            <span>Ukjent <strong>{isSectionMasked ? "***" : entry.unknown}%</strong> ({getMaskedValue(entry.unknownCount, isSectionMasked)} personer)</span>
                         </div>
                     )}
                     <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
-                        Totalt: 100% (<strong>{total}</strong> personer)
+                        Totalt: {isSectionMasked ? "***" : "100"}% (<strong>{getMaskedValue(total, isSectionMasked)}</strong> personer)
                     </div>
                 </>
             ) : (
                 <>
-                    {ALDER_REKKEFOLGE
+                    {alderGrupperFromEntry
                         .filter(gruppe => entry[`percent_${gruppe}`] > 0)
-                        .map(gruppe => (
-                            <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                                <span style={{ width: 10, height: 10, borderRadius: 2, background: ALDER_FARGER[gruppe] ?? "#ccc", display: "inline-block" }} />
-                                <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry[`${gruppe}Count`] ?? 0} personer)</span>
-                            </div>
-                        ))}
+                        .map(gruppe => {
+                            // Generer dynamiske farger basert på alle aldersgrupper
+                            const allGroups = Object.keys(entry.alderGrupper ?? {});
+                            const dynamicColors = generateDynamicAgeColors(allGroups);
+                            
+                            return (
+                                <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                                    <span style={{ width: 10, height: 10, borderRadius: 2, background: dynamicColors.get(gruppe) ?? "#ccc", display: "inline-block" }} />
+                                    <span>{gruppe}: {isSectionMasked ? "***" : (entry[`percent_${gruppe}`] ?? 0)}% ({getMaskedValue(entry[`${gruppe}Count`] ?? 0, isSectionMasked)} personer)</span>
+                                </div>
+                            );
+                        })}
                     <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
-                        Totalt: 100% (<strong>{total}</strong> personer)
+                        Totalt: {isSectionMasked ? "***" : "100"}% (<strong>{getMaskedValue(total, isSectionMasked)}</strong> personer)
                     </div>
                 </>)}
         </div>
@@ -118,21 +152,15 @@ export default function FordelingEtterStilling() {
         return kjonnChartData.some(entry => entry.unknownCount > 0);
     }, [kjonnChartData]);
 
-    // Age chart
+    // Hent dynamiske aldersgrupper fra API-data (erstatter hardkoding)
     const alderGrupperDynamisk = useMemo(() => {
-        const grupper = new Set<string>();
-        (alderData ?? []).forEach(entry => {
-            Object.keys(entry.alderGrupper).forEach(gruppe => grupper.add(gruppe));
-        });
-        // Sorter aldersgruppene i riktig rekkefølge
-        return Array.from(grupper).sort((a, b) => {
-            if (a === "Ukjent alder") return 1;
-            if (b === "Ukjent alder") return -1;
-            const aNum = parseInt(a.replace(/[^0-9]/g, ''));
-            const bNum = parseInt(b.replace(/[^0-9]/g, ''));
-            return aNum - bNum;
-        });
+        return extractUniqueAgeGroups(alderData ?? []);
     }, [alderData]);
+
+    // Generer dynamiske farger basert på aldersgrupper fra API
+    const dynamicAgeColors = useMemo(() => {
+        return generateDynamicAgeColors(alderGrupperDynamisk);
+    }, [alderGrupperDynamisk]);
 
     const hasUkjentAlder = useMemo(() => {
         return (alderData ?? []).some(entry => (entry.alderGrupper?.["Ukjent alder"] ?? 0) > 0);
@@ -235,11 +263,11 @@ export default function FordelingEtterStilling() {
                         </>
                     </div>
                 ) : (
-                    Object.entries(ALDER_FARGER)
-                        .filter(([gruppe]) => gruppe !== "Ukjent alder" || hasUkjentAlder)
-                        .map(([gruppe, farge]) => (
+                    alderGrupperDynamisk
+                        .filter(gruppe => gruppe !== "Ukjent alder" || hasUkjentAlder)
+                        .map(gruppe => (
                             <span key={gruppe} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500, color: "#334155" }}>
-                                <span style={{ width: 14, height: 14, borderRadius: 4, background: farge, display: "inline-block" }} onMouseEnter={() => setHovered(gruppe)} onMouseLeave={() => setHovered(null)} />
+                                <span style={{ width: 14, height: 14, borderRadius: 4, background: dynamicAgeColors.get(gruppe) ?? "#ccc", display: "inline-block" }} onMouseEnter={() => setHovered(gruppe)} onMouseLeave={() => setHovered(null)} />
                                 {gruppe}
                             </span>
                         ))
@@ -266,12 +294,13 @@ export default function FordelingEtterStilling() {
                             )}
                         </>
                     ) : (
+                        // Bruk dynamiske aldersgrupper i stedet for hardkodede
                         alderGrupperDynamisk.map(gruppe => (
                             <Bar
                                 key={gruppe}
                                 dataKey={`percent_${gruppe}`}
                                 stackId="a"
-                                fill={ALDER_FARGER[gruppe] ?? "#ccc"}
+                                fill={dynamicAgeColors.get(gruppe) ?? "#ccc"}
                                 fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3}
                             />
                         ))

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 
 export interface SeksjonKjonn {
     avdeling: string;
+    erMaskert?: boolean; // Support for department-level masking
     seksjoner: {
         gruppe: string;
+        erMaskert?: boolean; // Support for section-level masking
         kjonnAntall: {
             kvinne?: number;
             mann?: number;
@@ -21,6 +23,7 @@ interface GenderChartEntry {
     femaleCount: number;
     maleCount: number;
     unknownCount: number;
+    erMaskert?: boolean; // Support for masking
 }
 
 export function useKjonnData() {
@@ -41,6 +44,10 @@ export function useKjonnData() {
                         const male = seksjon.kjonnAntall.mann ?? 0;
                         const unknown = 0; // evt. annen logikk hvis unknown kan forekomme
                         const total = female + male + unknown;
+                        
+                        // Maskering: Hvis avdeling eller seksjon er maskert
+                        const erMaskert = Boolean(avd.erMaskert || seksjon.erMaskert);
+                        
                         result.push({
                             section: seksjon.gruppe,
                             department: avd.avdeling,
@@ -51,6 +58,7 @@ export function useKjonnData() {
                             femaleCount: female,
                             maleCount: male,
                             unknownCount: unknown,
+                            erMaskert, // Include masking status
                         });
                     });
                 });
