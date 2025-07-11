@@ -13,22 +13,28 @@ export function useAlderPerStilling() {
                 const rawData: RawAlderPerStillingData[] = await response.json();
 
                 // Grupper data etter stillingstittel
-                const stillingMap = new Map<string, Record<string, number>>();
+                const stillingMap = new Map<string, { alderGrupper: Record<string, number>; erMaskert: boolean }>();
                 
                 rawData.forEach(item => {
                     if (!stillingMap.has(item.gruppe1)) {
-                        stillingMap.set(item.gruppe1, {});
+                        stillingMap.set(item.gruppe1, { alderGrupper: {}, erMaskert: false });
                     }
                     
-                    const alderGrupper = stillingMap.get(item.gruppe1)!;
+                    const stillingData = stillingMap.get(item.gruppe1)!;
                     const antall = (item.kjonnAntall.kvinne ?? 0) + (item.kjonnAntall.mann ?? 0);
-                    alderGrupper[item.gruppe2] = antall;
+                    stillingData.alderGrupper[item.gruppe2] = antall;
+                    
+                    // Hvis noe data for denne stillingen er maskert, marker hele stillingen som maskert
+                    if (item.erMaskert) {
+                        stillingData.erMaskert = true;
+                    }
                 });
 
                 const transformedData = Array.from(stillingMap.entries())
-                    .map(([stilling, alderGrupper]) => ({
+                    .map(([stilling, data]) => ({
                         section: stilling,
-                        alderGrupper
+                        alderGrupper: data.alderGrupper,
+                        erMaskert: data.erMaskert, // Include masking status
                     }));
 
                 setData(transformedData);

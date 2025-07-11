@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Heading, Label, Button, BodyShort } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ReactSelect from "react-select";
+import { generateDynamicAgeColors, extractUniqueAgeGroups, isMasked, getMaskedStyle, getMaskedValue } from "./utils/alderGruppeUtils";
+
+// VIKTIG: Aldersgrupper skal alltid hentes dynamisk fra API-responsen og aldri hardkodes
+// Dette gjelder alle komponenter som håndterer aldersdata
 
 export default function StatistikkExplorerTab() {
   const [rawData, setRawData] = useState<any[]>([]);
@@ -52,7 +56,25 @@ export default function StatistikkExplorerTab() {
   const allOptions = useMemo(
     () => ({
       kjonn: distinct(rawData.map((d) => d.kjonn)),
-      alder: distinct(rawData.map((d) => d.aldersgruppe)),
+      // VIKTIG: Hent aldersgrupper dynamisk i stedet for hardkoding
+      alder: Array.from(
+        new Set(rawData.map((d) => d.aldersgruppe).filter(Boolean))
+      ).sort((a, b) => {
+        // "Ukjent alder" skal alltid komme sist  
+        if (a.includes("Ukjent") || a.includes("ukjent")) return 1;
+        if (b.includes("Ukjent") || b.includes("ukjent")) return -1;
+        
+        // Prøv å sortere numerisk hvis mulig
+        const aNum = parseInt(a.replace(/[^0-9]/g, ''));
+        const bNum = parseInt(b.replace(/[^0-9]/g, ''));
+        
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          return aNum - bNum;
+        }
+        
+        // Fallback til alfabetisk sortering
+        return a.localeCompare(b);
+      }),
       ansiennitet: distinct(rawData.map((d) => d.ansiennitetsgruppe)),
       lederniva: distinct(rawData.map((d) => d.lederniva)),
       stilling: distinct(rawData.map((d) => d.stillingsnavn)),
@@ -104,9 +126,12 @@ export default function StatistikkExplorerTab() {
       const key = d[groupKey]?.trim() || "Ukjent";
       const kjonn = d.kjonn?.trim() || "Ukjent";
       const antall = d.antall ?? 0;
+      
+      // Sjekk for maskering (erMaskert kan komme fra API-data)
+      const maskert = isMasked(d);
 
       if (!map.has(key)) {
-        map.set(key, { gruppe: key, kvinne: 0, mann: 0, ukjent: 0, total: 0 });
+        map.set(key, { gruppe: key, kvinne: 0, mann: 0, ukjent: 0, total: 0, erMaskert: maskert });
       }
 
       const entry = map.get(key)!;
@@ -115,15 +140,17 @@ export default function StatistikkExplorerTab() {
       else entry.ukjent += antall;
 
       entry.total += antall;
+      entry.erMaskert = entry.erMaskert || maskert; // Hvis noen data er maskert, maska hele gruppen
     });
 
     // Gjør klart chart-data, inkludert tomme grupper
-    return Array.from(map.values()).map(({ gruppe, kvinne, mann, ukjent, total }) => ({
+    return Array.from(map.values()).map(({ gruppe, kvinne, mann, ukjent, total, erMaskert }) => ({
       gruppe,
       kvinne: total > 0 ? (kvinne / total) * 100 : 0,
       mann: total > 0 ? (mann / total) * 100 : 0,
       ukjent: total > 0 ? (ukjent / total) * 100 : 0,
       harIngenData: total === 0,
+      erMaskert: erMaskert || false, // Include masking status
     }));
   }, [filteredData, selectedDepartments, selectedSections]);
 
@@ -219,10 +246,55 @@ export default function StatistikkExplorerTab() {
             <BarChart data={chartData} margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
               <XAxis dataKey="gruppe" />
               <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(value: any) => `${value.toFixed(1)}%`} />
-              <Bar dataKey="kvinne" stackId="a" name="Kvinner" fill="#339989" />
-              <Bar dataKey="mann" stackId="a" name="Menn" fill="#232C3D" />
-              <Bar dataKey="ukjent" stackId="a" name="Ukjent" fill="#D0D0D0" />
+              <Tooltip 
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  
+                  const data = payload[0].payload;
+                  const maskert = isMasked(data);
+                  
+                  return (
+                    <div style={{ 
+                      background: "#2d3748", 
+                      color: "white", 
+                      padding: "1rem", 
+                      borderRadius: "0.5rem", 
+                      fontSize: "14px",
+                      ...getMaskedStyle(maskert)
+                    }}>
+                      <div style={{ fontWeight: 600, marginBottom: 8 }}>{label}</div>
+                      {maskert && (
+                        <div style={{ marginBottom: 8, fontStyle: "italic", color: "#cbd5e1" }}>
+                          Data er maskert for denne gruppen
+                        </div>
+                      )}
+                      {payload.map((entry, index) => (
+                        <div key={index} style={{ marginBottom: 4 }}>
+                          <span style={{ color: entry.color }}>■</span> {entry.name}: {getMaskedValue(entry.value, maskert)}%
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}
+              />
+              <Bar 
+                dataKey="kvinne" 
+                stackId="a" 
+                name="Kvinner" 
+                fill="#339989"
+              />
+              <Bar 
+                dataKey="mann" 
+                stackId="a" 
+                name="Menn" 
+                fill="#232C3D"
+              />
+              <Bar 
+                dataKey="ukjent" 
+                stackId="a" 
+                name="Ukjent" 
+                fill="#D0D0D0"
+              />
             </BarChart>
           </ResponsiveContainer>
 
