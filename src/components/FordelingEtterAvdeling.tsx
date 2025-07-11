@@ -1,3 +1,12 @@
+/**
+ * FordelingEtterAvdeling - Viser kjønns- og aldersfordeling per seksjon
+ * 
+ * VIKTIG: 
+ * - Aldersgrupper hentes alltid dynamisk fra API-responsen og aldri hardkodes
+ * - Støtter maskering via erMaskert flag på seksjon/avdeling niveau
+ * - Når data er maskert vises det grået ut og tall skjules
+ */
+
 import { useState, useMemo } from "react";
 import { Heading } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -331,10 +340,29 @@ export default function FordelingEtterAvdelinger() {
                     <Tooltip content={<CustomTooltip />} />
                     {view === "kjonn" ? (
                         <>
-                            <Bar dataKey="female" stackId="a" fill="#38a169" fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3} />
-                            <Bar dataKey="male" stackId="a" fill="#1e293b" fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3} />
+                            <Bar 
+                                dataKey="female" 
+                                stackId="a" 
+                                fill="#38a169" 
+                                fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3}
+                                // Apply grayscale effect to masked data
+                                style={(entry: any) => isMasked(entry) ? getMaskedStyle(true) : {}}
+                            />
+                            <Bar 
+                                dataKey="male" 
+                                stackId="a" 
+                                fill="#1e293b" 
+                                fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3}
+                                style={(entry: any) => isMasked(entry) ? getMaskedStyle(true) : {}}
+                            />
                             {hasUnknown && (
-                                <Bar dataKey="unknown" stackId="a" fill="#999b9d" fillOpacity={hovered === "unknown" || hovered === null ? 1 : 0.3} />
+                                <Bar 
+                                    dataKey="unknown" 
+                                    stackId="a" 
+                                    fill="#999b9d" 
+                                    fillOpacity={hovered === "unknown" || hovered === null ? 1 : 0.3}
+                                    style={(entry: any) => isMasked(entry) ? getMaskedStyle(true) : {}}
+                                />
                             )}
                         </>
                     ) : (
@@ -346,15 +374,20 @@ export default function FordelingEtterAvdelinger() {
                                 stackId="a"
                                 fill={dynamicAgeColors.get(gruppe) ?? "#ccc"}
                                 fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3}
+                                style={(entry: any) => isMasked(entry) ? getMaskedStyle(true) : {}}
                             />
                         ))
                     )}
-
                 </BarChart>
             </ResponsiveContainer>
 
             <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#000000", marginTop: "0.5rem" }}>
                 {view === "kjonn" ? "Andel kvinner (hover for antall)" : "Andel i hver aldersgruppe (hover for antall)"}
+                {sortedData.some(entry => isMasked(entry)) && (
+                    <span style={{ display: "block", fontStyle: "italic", color: "#666", marginTop: "0.25rem" }}>
+                        ⚠️ Noen seksjoner har maskerte data og vises grået ut
+                    </span>
+                )}
             </p>
         </div>
     );

@@ -1,3 +1,12 @@
+/**
+ * StatistikkExplorerTab - Avansert filtrering og visning av statistikk
+ * 
+ * VIKTIG: 
+ * - Aldersgrupper hentes alltid dynamisk fra API-responsen og aldri hardkodes
+ * - Støtter maskering via erMaskert flag på alle nivåer
+ * - Når data er maskert vises det grået ut og tall skjules
+ */
+
 import { useEffect, useMemo, useState } from "react";
 import { Heading, Label, Button } from "@navikt/ds-react";
 import {

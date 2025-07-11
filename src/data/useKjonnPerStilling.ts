@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export interface RolleKjonn {
   gruppe: string;
+  erMaskert?: boolean; // Support for role-level masking
   kjonnAntall: {
     kvinne?: number;
     mann?: number;
@@ -18,6 +19,7 @@ export interface GenderRoleEntry {
   femaleCount: number;
   maleCount: number;
   unknownCount: number;
+  erMaskert?: boolean; // Support for masking
 }
 
 export function useKjonnPerStilling() {
@@ -34,6 +36,9 @@ export function useKjonnPerStilling() {
           const male = role.kjonnAntall.mann ?? 0;
           const unknown = role.kjonnAntall.ukjent ?? 0;
           const total = female + male + unknown;
+          
+          // Include masking status if available
+          const erMaskert = Boolean(role.erMaskert);
 
           return {
             section: role.gruppe, // <-- Riktig felt her!
@@ -44,6 +49,7 @@ export function useKjonnPerStilling() {
             femaleCount: female,
             maleCount: male,
             unknownCount: unknown,
+            erMaskert, // Include masking status
           };
         });
         setData(result);

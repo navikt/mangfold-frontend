@@ -1,3 +1,12 @@
+/**
+ * FordelingEtterStilling - Viser kjønns- og aldersfordeling per stilling
+ * 
+ * VIKTIG: 
+ * - Aldersgrupper hentes alltid dynamisk fra API-responsen og aldri hardkodes
+ * - Støtter maskering via erMaskert flag på stilling niveau
+ * - Når data er maskert vises det grået ut og tall skjules
+ */
+
 import { useState, useMemo } from "react";
 import { Heading } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -310,6 +319,11 @@ export default function FordelingEtterStilling() {
 
             <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#000000", marginTop: "0.5rem" }}>
                 {view === "kjonn" ? "Andel kvinner (hover for antall)" : "Andel i hver aldersgruppe (hover for antall)"}
+                {sortedData.some(entry => isMasked(entry)) && (
+                    <span style={{ display: "block", fontStyle: "italic", color: "#666", marginTop: "0.25rem" }}>
+                        ⚠️ Noen stillinger har maskerte data og vises grået ut
+                    </span>
+                )}
             </p>
         </div>
     );

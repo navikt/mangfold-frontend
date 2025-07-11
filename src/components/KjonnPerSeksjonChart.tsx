@@ -1,3 +1,11 @@
+/**
+ * KjonnPerSeksjonChart - Kjønnsfordeling per seksjon og rolle
+ * 
+ * VIKTIG: 
+ * - Støtter maskering via erMaskert flag på seksjon/rolle niveau
+ * - Når data er maskert vises det grået ut og tall skjules
+ */
+
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Heading } from "@navikt/ds-react";
@@ -219,6 +227,11 @@ export default function KjonnPerSeksjonChart() {
           </ResponsiveContainer>
           <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#000000", marginTop: "0.5rem" }}>
             Andel kvinner (hover for antall)
+            {sortedData.some(entry => isMasked(entry)) && (
+              <span style={{ display: "block", fontStyle: "italic", color: "#666", marginTop: "0.25rem" }}>
+                ⚠️ Noen seksjoner har maskerte data og vises grået ut
+              </span>
+            )}
           </p>
         </>
       )}
