@@ -1,4 +1,4 @@
-import { Heading, BodyShort } from "@navikt/ds-react";
+import { Heading, BodyShort, BodyLong } from "@navikt/ds-react";
 import { useMetaData } from "../data/useMetaData";
 import {
   CalendarIcon,
