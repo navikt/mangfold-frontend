@@ -9,6 +9,7 @@ import {
   ClockIcon,
   MonitorIcon,
   MegaphoneIcon,
+  NotePencilIcon,
 } from "@navikt/aksel-icons";
 
 export default function DatagrunnlagInfo() {
@@ -126,7 +127,7 @@ export default function DatagrunnlagInfo() {
 
       <div style={sectionStyle}>
         <div style={iconWrapperStyle}>
-          <CogIcon aria-hidden fontSize="1.75rem" />
+          <NotePencilIcon aria-hidden fontSize="1.75rem" />
         </div>
         <div>
           <Heading level="4" size="xsmall" spacing>
@@ -143,7 +144,7 @@ export default function DatagrunnlagInfo() {
             I dashboardet er det mulig å se "ledernivå", dette er en tittel som svarer til en posisjon i hierarkiet i Nav, og vi har brukt følgende inndeling:
           </BodyLong>
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
-            <li><BodyShort>"Arbeids- og velferdsdirektør" (Leder for hele Nav, høyeste nivå)</BodyShort></li>
+            <li><BodyShort>"Arbeids- og velferdsdirektør" (leder for hele Nav, høyeste nivå)</BodyShort></li>
             <li><BodyShort>"Direktør" (nest høyeste nivå, leder for avdelinger, altså Teknologidirektør, Kommunikasjonsdirektør osv.)</BodyShort></li>
             <li><BodyShort>"Avdelingsdirektør" (leder for seksjon)</BodyShort></li>
             <li><BodyShort>"Seksjonssjef"(leder for "enhet")</BodyShort></li>
