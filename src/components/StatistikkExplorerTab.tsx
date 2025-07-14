@@ -86,18 +86,50 @@ export default function StatistikkExplorerTab() {
     return map;
   }, [rawData]);
 
+  const filterValidSelections = (selected: string[], available: string[]) =>
+  selected.filter((val) => available.includes(val));
+
 
   useEffect(() => {
     setSelectedSections([]);
   }, [selectedDepartments]);
 
-  useEffect(() => {
+useEffect(() => {
+  if (selectedDepartments.length === 0) {
+    setSelectedSections([]);
     setSelectedKjonn([]);
     setSelectedAlder([]);
     setSelectedAnsiennitet([]);
     setSelectedLederniva([]);
     setSelectedStilling([]);
-  }, [selectedDepartments, selectedSections]);
+    return;
+  }
+
+  // Filtrér seksjoner basert på valgte avdelinger
+  const validSections = selectedDepartments.flatMap((dep) => sectionOptionsByDepartment[dep] || []);
+  setSelectedSections((prev) => filterValidSelections(prev, validSections));
+
+  // Kjønn
+  const validKjonn = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.kjonn));
+  setSelectedKjonn((prev) => filterValidSelections(prev, validKjonn));
+
+  // Alder
+  const validAlder = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.aldersgruppe));
+  setSelectedAlder((prev) => filterValidSelections(prev, validAlder));
+
+  // Ansiennitet
+  const validAnsiennitet = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.ansiennitetsgruppe));
+  setSelectedAnsiennitet((prev) => filterValidSelections(prev, validAnsiennitet));
+
+  // Ledernivå
+  const validLederniva = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.lederniva));
+  setSelectedLederniva((prev) => filterValidSelections(prev, validLederniva));
+
+  // Stilling
+  const validStilling = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.stillingsnavn));
+  setSelectedStilling((prev) => filterValidSelections(prev, validStilling));
+}, [selectedDepartments, rawData]);
+
 
   const addSelectAll = (options: string[]) => ["(Alle)", ...options];
 
