@@ -98,7 +98,7 @@ export default function DatagrunnlagInfo() {
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
             <li><BodyShort>Alder (gruppert i aldersgrupper)</BodyShort></li>
             <li><BodyShort>Ansiennitet (gruppert)</BodyShort></li>
-            <li><BodyShort>Kjønn</BodyShort></li>
+            <li><BodyShort>Kjønn (juridisk kjønn)</BodyShort></li>
             <li><BodyShort>Avdeling og seksjonstilhørighet</BodyShort></li>
             <li><BodyShort>Stillingsnavn og nivå i Navs hierarki</BodyShort></li>
             <li><BodyShort>Roller og seksjonstilhørighet fra teamkatalogen</BodyShort></li>
@@ -121,10 +121,35 @@ export default function DatagrunnlagInfo() {
           <BodyLong style={{ marginTop: "0.75rem" }}>
             Data fra personalsystemet er mer komplett og entydig enn data fra teamkatalogen, men reflekterer ikke like godt hvordan folk selv synes de jobber i Nav. Noens stillingstittel sier lite om deres daglige oppgaver, men kan gi innsikt i deres formelle posisjon. Rollen deres, fra teamkatalogen, sier mer om hvordan folk jobber daglig.
           </BodyLong>
+        </div>
+      </div>
 
+      <div style={sectionStyle}>
+        <div style={iconWrapperStyle}>
+          <CogIcon aria-hidden fontSize="1.75rem" />
+        </div>
+        <div>
+          <Heading level="4" size="xsmall" spacing>
+            Merknader om dataen som vises
+          </Heading>
           <BodyLong>  
             Seksjon kalles "område" i teamkatalogen av historiske grunner, men skal etter 2025 representere seksjon i organisasjonskartet.
           </BodyLong>
+
+          <BodyLong>
+            I Nav finnes det et misforhold mellom navnet på ledertitler og typen enhet man leder. Det er altså mange flere "avdelingsdirektører" enn det finnes avdelinger, og dette er som forventet.
+          </BodyLong>
+          <BodyLong>
+            I dashboardet er det mulig å se "ledernivå", dette er en tittel som svarer til en posisjon i hierarkiet i Nav, og vi har brukt følgende inndeling:
+          </BodyLong>
+          <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
+            <li><BodyShort>"Arbeids- og velferdsdirektør" (Leder for hele Nav, høyeste nivå)</BodyShort></li>
+            <li><BodyShort>"Direktør" (nest høyeste nivå, leder for avdelinger, altså Teknologidirektør, Kommunikasjonsdirektør osv.)</BodyShort></li>
+            <li><BodyShort>"Avdelingsdirektør" (leder for seksjon)</BodyShort></li>
+            <li><BodyShort>"Seksjonssjef"(leder for "enhet")</BodyShort></li>
+            <li><BodyShort>"Kontorsjef" (personalleder innad i en enhet)</BodyShort></li>
+            <li><BodyShort>"Ressurs" (nederste nivå)</BodyShort></li>
+          </ul>
         </div>
       </div>
 
@@ -167,6 +192,14 @@ export default function DatagrunnlagInfo() {
             <li><BodyShort>Totalgrupperinger (i praksis seksjoner eller stillingsgrupper) som er for små kan ikke vises da datagrunnlaget ikke er godt nok.</BodyShort></li>
             <li><BodyShort>"Ukjent", eller en deskriptiv variant, brukes som verdi når informasjon mangler i kildesystemene.</BodyShort></li>
           </ul>
+
+          <BodyLong>  
+            Merk at detaljer i hvordan (og hvilke) personer man teller opp har mye å si for resultatet, og det er usannsynlig at tellinger fra andre steder (slik som teamkatalogen) svarer nøyaktig til antall man finner frem til i dette dashboardet.
+            Husk at bare denne siden bare dekker personer som er statlige ansatte, slik at alle tellinger som inkluderer konsulenter ikke samsvarer.
+          </BodyLong>
+          <BodyLong>
+            En annen faktor som kan ha utslag på tellinger, er at i NOM og Teamkatalogen er ledere for en avdeling ført opp som medlem av en fiktiv seksjon med samme navn som avdelingen. Disse fiktive "seksjonene" er filtrert ut i grafer som omhandler seksjoner. Men ledere er inkludert i tellinger på avdelingsnivå, og svarer da til et par ekstra personer i de ulike avdelingene sammenlignet med en ren sum av personer per seksjon.
+          </BodyLong>
         </div>
       </div>
 
