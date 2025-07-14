@@ -272,7 +272,7 @@ export default function StatistikkExplorerTab() {
       }
 
       else {
-        result[val] = "#888";
+        result[val] = "#236B7D";
       }
     });
 
