@@ -12,7 +12,7 @@ import ChartTableView from "./ChartTableView";
 import { CustomizedAxisTick } from "./CustomizedAxisTick";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
-
+import { getKjonnFarger } from "../utils/kjonnFarger";
 
 type ApiAvdeling = {
   gruppe: string;
@@ -29,6 +29,8 @@ type AggregatedAvdeling = {
   maleCount: number;
   femaleCount: number;
 };
+
+const kjonnFarger = getKjonnFarger();
 
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (active && payload && payload.length > 1) {
@@ -56,7 +58,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
               width: "10px",
               height: "10px",
               borderRadius: "0px",
-              backgroundColor: "#38a169",
+              backgroundColor: kjonnFarger.get("female"),
             }}
           />
           <span>
@@ -71,7 +73,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
               width: "10px",
               height: "10px",
               borderRadius: "0px",
-              backgroundColor: "#1e293b",
+              backgroundColor: kjonnFarger.get("male"),
             }}
           />
           <span>
@@ -222,7 +224,7 @@ export default function StatistikkPanel() {
               >
                 <span
                   className="gender-square"
-                  style={{ background: "#38a169" }}
+                  style={{ background: kjonnFarger.get("female") }}
                 />
                 Kvinner
               </span>
@@ -234,7 +236,7 @@ export default function StatistikkPanel() {
               >
                 <span
                   className="gender-square"
-                  style={{ background: "#1e293b" }}
+                  style={{ background: kjonnFarger.get("male") }}
                 />
                 Menn
               </span>
@@ -264,13 +266,13 @@ export default function StatistikkPanel() {
               <Bar
                 dataKey="female"
                 name="Kvinner"
-                fill="#38a169"
+                fill={kjonnFarger.get("female")}
                 fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3}
               />
               <Bar
                 dataKey="male"
                 name="Menn"
-                fill="#333c46"
+                fill={kjonnFarger.get("male")}
                 fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3}
               />
             </BarChart>

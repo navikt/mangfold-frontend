@@ -1,5 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
-//import { Heading } from "@navikt/ds-react";
+import { getKjonnFarger } from "../utils/kjonnFarger";
+// import { Heading } from "@navikt/ds-react";
 
 interface GenderDataEntry {
   label: string;
@@ -10,9 +11,12 @@ interface GenderDataEntry {
 }
 
 interface GenderBarChartProps {
-  //title: string;
+  // title: string;
   data: GenderDataEntry[];
 }
+
+const kjonnFarger = getKjonnFarger();
+
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length >= 2) {
     const female = payload.find((p: any) => p.dataKey === "female");
@@ -33,14 +37,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       >
         <div style={{ fontWeight: 600, marginBottom: "0.5rem", fontSize: "1rem" }}>{label}</div>
 
-        <div style={{ color: "#2f855a" }}>
+        <div style={{ color: kjonnFarger.get("female") }}>
           <strong>Andel kvinner:</strong> {female?.value}%{" "}
           <span style={{ fontSize: "0.85rem", color: "#4a5568" }}>
             ({female?.payload?.femaleCount ?? "?"} personer)
           </span>
         </div>
 
-        <div style={{ color: "#1a202c", marginTop: "0.25rem" }}>
+        <div style={{ color: kjonnFarger.get("male"), marginTop: "0.25rem" }}>
           <strong>Andel menn:</strong> {male?.value}%{" "}
           <span style={{ fontSize: "0.85rem", color: "#4a5568" }}>
             ({male?.payload?.maleCount ?? "?"} personer)
@@ -55,16 +59,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function GenderBarChart({ /*title*/ data }: GenderBarChartProps) {
   return (
     <div style={{ width: "100%", height: 300, marginTop: "2rem" }}>
-      {/*<Heading level="3" size="small" spacing>{title}</Heading>
-      */}
+      {/*<Heading level="3" size="small" spacing>{title}</Heading>*/}
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
           <XAxis dataKey="label" />
           <YAxis domain={[0, 100]} unit="%" />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
-          <Bar dataKey="female" fill="#38a169" name="Andel kvinner" />
-          <Bar dataKey="male" fill="#2d3748" name="Andel menn" />
+          <Bar dataKey="female" fill={kjonnFarger.get("female")} name="Andel kvinner" />
+          <Bar dataKey="male" fill={kjonnFarger.get("male")} name="Andel menn" />
         </BarChart>
       </ResponsiveContainer>
     </div>

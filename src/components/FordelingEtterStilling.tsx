@@ -4,9 +4,9 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recha
 import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
 import { useAlderPerStilling } from "../data/useAlderPerStilling";
 import { getAlderFarger } from "../utils/alderFarger";
+import { getKjonnFarger } from "../utils/kjonnFarger";
 import "../css/KjonnPerSeksjonChart.css";
 
-const MASKERT_FARGE = "#e870a3";
 type ViewType = "kjonn" | "alder";
 
 function fordelProsentverdier(grupper: string[], verdier: Record<string, number>) {
@@ -38,18 +38,19 @@ function CustomTooltip(props: {
     view: ViewType;
     aldersgrupper: string[];
     alderFarger: Map<string, string>;
+    kjonnFarger: Map<string, string>;
 }) {
-    const { active, payload, label, view, aldersgrupper, alderFarger } = props;
+    const { active, payload, label, view, aldersgrupper, alderFarger, kjonnFarger } = props;
     if (!active || !payload || !payload.length) return null;
     const entry = payload[0].payload;
-    if (entry.isMasked) {
-        return (
-            <div style={{ background: MASKERT_FARGE, color: "#fff", padding: "1rem", borderRadius: "0.5rem" }}>
-                <div style={{ fontWeight: 600 }}>{label}</div>
-                <div style={{ color: "#fff", marginTop: 8 }}>For få personer til å kunne vise data.</div>
-            </div>
-        );
-    }
+if (entry.isMasked) {
+    return (
+        <div style={{ background: "#2d3748", color: "#fff", padding: "1rem", borderRadius: "0.5rem" }}>
+            <div style={{ fontWeight: 600 }}>{label}</div>
+            <div style={{ color: "#fff", marginTop: 8 }}>For få personer til å kunne vise data.</div>
+        </div>
+    );
+}
     const isGender = view === "kjonn";
     const total = isGender
         ? (entry.femaleCount ?? 0) + (entry.maleCount ?? 0) + (entry.unknownCount ?? 0)
@@ -61,16 +62,16 @@ function CustomTooltip(props: {
             {isGender ? (
                 <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <span className="gender-square" style={{ background: "#38a169" }} />
+                        <span className="gender-square" style={{ background: kjonnFarger.get("female") }} />
                         <span>Andel kvinner <strong>{entry.female}%</strong> ({entry.femaleCount} personer)</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: entry.unknownCount > 0 ? 4 : 0 }}>
-                        <span className="gender-square" style={{ background: "#1e293b" }} />
+                        <span className="gender-square" style={{ background: kjonnFarger.get("male") }} />
                         <span>Andel menn <strong>{entry.male}%</strong> ({entry.maleCount} personer)</span>
                     </div>
                     {entry.unknownCount > 0 && (
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span className="gender-square" style={{ background: "#999b9d" }} />
+                            <span className="gender-square" style={{ background: kjonnFarger.get("unknown") }} />
                             <span>Ukjent <strong>{entry.unknown}%</strong> ({entry.unknownCount} personer)</span>
                         </div>
                     )}
@@ -103,6 +104,7 @@ export default function FordelingEtterStilling() {
     const { data: kjonnData } = useKjonnPerStilling();
     const { data: alderData, aldersgrupper } = useAlderPerStilling();
     const alderFarger = useMemo(() => getAlderFarger(aldersgrupper), [aldersgrupper]);
+    const kjonnFarger = useMemo(() => getKjonnFarger(), []);
 
     // Kjønn-data: maskering og prosenter
     const kjonnChartData = useMemo(() => {
@@ -216,12 +218,11 @@ export default function FordelingEtterStilling() {
                 {view === "kjonn" ? (
                     <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
                         <>
-                            <span className="gender-label"><span className="gender-square" style={{ background: "#38a169" }} />Kvinner</span>
-                            <span className="gender-label"><span className="gender-square" style={{ background: "#1e293b" }} />Menn</span>
+                            <span className="gender-label"><span className="gender-square" style={{ background: kjonnFarger.get("female") }} />Kvinner</span>
+                            <span className="gender-label"><span className="gender-square" style={{ background: kjonnFarger.get("male") }} />Menn</span>
                             {hasUnknown && (
-                                <span className="gender-label"><span className="gender-square" style={{ background: "#999b9d" }} />Ukjent</span>
+                                <span className="gender-label"><span className="gender-square" style={{ background: kjonnFarger.get("unknown") }} />Ukjent</span>
                             )}
-                            <span className="gender-label"><span className="gender-square" style={{ background: MASKERT_FARGE }} />Maskert</span>
                         </>
                     </div>
                 ) : (
@@ -229,7 +230,6 @@ export default function FordelingEtterStilling() {
                         {aldersgrupper.map((gruppe: string) => (
                             <span key={gruppe} className="gender-label"><span className="gender-square" style={{ background: alderFarger.get(gruppe) }} />{gruppe}</span>
                         ))}
-                        <span className="gender-label"><span className="gender-square" style={{ background: MASKERT_FARGE }} />Maskert</span>
                     </>
                 )}
             </div>
@@ -243,15 +243,16 @@ export default function FordelingEtterStilling() {
                             view={view}
                             aldersgrupper={aldersgrupper}
                             alderFarger={alderFarger}
+                            kjonnFarger={kjonnFarger}
                         />
                     )} />
-                    <Bar dataKey="masked" stackId="a" fill={MASKERT_FARGE} isAnimationActive={false} label={false} />
+                    <Bar dataKey="masked" stackId="a" fill={kjonnFarger.get("masked")} isAnimationActive={false} label={false} />
                     {view === "kjonn" ? (
                         <>
-                            <Bar dataKey="female" stackId="a" fill="#38a169" />
-                            <Bar dataKey="male" stackId="a" fill="#1e293b" />
+                            <Bar dataKey="female" stackId="a" fill={kjonnFarger.get("female")} />
+                            <Bar dataKey="male" stackId="a" fill={kjonnFarger.get("male")} />
                             {hasUnknown && (
-                                <Bar dataKey="unknown" stackId="a" fill="#999b9d" />
+                                <Bar dataKey="unknown" stackId="a" fill={kjonnFarger.get("unknown")} />
                             )}
                         </>
                     ) : (
