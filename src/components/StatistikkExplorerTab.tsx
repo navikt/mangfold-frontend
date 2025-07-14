@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Heading, BodyLong } from "@navikt/ds-react";
 import {
-  Heading,
   Button,
   Accordion,
   UNSAFE_Combobox,
@@ -14,23 +14,29 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import * as tokens from "@navikt/ds-tokens/dist/tokens";
+import { GuidePanel } from "@navikt/ds-react";
+
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
-    const total = payload.reduce((acc: number, entry: any) => acc + entry.payload[entry.dataKey], 0);
+    const total = payload[0]?.payload?.totalAntall ?? 0;
 
     return (
       <div style={{ background: "white", border: "1px solid #ccc", padding: "0.5rem" }}>
         {payload.map((entry: any, index: number) => {
-          const verdi = entry.payload[entry.dataKey];
-          const antall = Math.round((verdi / 100) * total);
+          const prosent = entry.value;
+          const antall = Math.round((prosent / 100) * total);
+
+          const erTotalt = entry.name === "Totalt" || prosent === 100;
 
           return (
             <div key={`item-${index}`} style={{ color: entry.color }}>
               <strong>{entry.name}</strong>:{" "}
-              {antall < 5
-                ? "For få personer til å vise data"
-                : `${verdi.toFixed(1)}% (${antall} personer)`}
+              {erTotalt
+                ? `${prosent.toFixed(1)}% (${total} personer)`
+                : antall < 5
+                  ? "For få personer til å vise data"
+                  : `${prosent.toFixed(1)}% (${antall} personer)`}
             </div>
           );
         })}
@@ -39,7 +45,6 @@ const CustomTooltip = ({ active, payload }: any) => {
   }
   return null;
 };
-
 
 export default function StatistikkExplorerTab() {
   const [rawData, setRawData] = useState<any[]>([]);
@@ -87,52 +92,51 @@ export default function StatistikkExplorerTab() {
   }, [rawData]);
 
   const filterValidSelections = (selected: string[], available: string[]) =>
-  selected.filter((val) => available.includes(val));
+    selected.filter((val) => available.includes(val));
 
 
   useEffect(() => {
     setSelectedSections([]);
   }, [selectedDepartments]);
 
-useEffect(() => {
-  if (selectedDepartments.length === 0) {
-    setSelectedSections([]);
-    setSelectedKjonn([]);
-    setSelectedAlder([]);
-    setSelectedAnsiennitet([]);
-    setSelectedLederniva([]);
-    setSelectedStilling([]);
-    return;
-  }
+  useEffect(() => {
+    if (selectedDepartments.length === 0) {
+      setSelectedSections([]);
+      setSelectedKjonn([]);
+      setSelectedAlder([]);
+      setSelectedAnsiennitet([]);
+      setSelectedLederniva([]);
+      setSelectedStilling([]);
+      return;
+    }
 
-  // Filtrér seksjoner basert på valgte avdelinger
-  const validSections = selectedDepartments.flatMap((dep) => sectionOptionsByDepartment[dep] || []);
-  setSelectedSections((prev) => filterValidSelections(prev, validSections));
+    // Filtrér seksjoner basert på valgte avdelinger
+    const validSections = selectedDepartments.flatMap((dep) => sectionOptionsByDepartment[dep] || []);
+    setSelectedSections((prev) => filterValidSelections(prev, validSections));
 
-  // Kjønn
-  const validKjonn = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.kjonn));
-  setSelectedKjonn((prev) => filterValidSelections(prev, validKjonn));
+    // Kjønn
+    const validKjonn = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.kjonn));
+    setSelectedKjonn((prev) => filterValidSelections(prev, validKjonn));
 
-  // Alder
-  const validAlder = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.aldersgruppe));
-  setSelectedAlder((prev) => filterValidSelections(prev, validAlder));
+    // Alder
+    const validAlder = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.aldersgruppe));
+    setSelectedAlder((prev) => filterValidSelections(prev, validAlder));
 
-  // Ansiennitet
-  const validAnsiennitet = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.ansiennitetsgruppe));
-  setSelectedAnsiennitet((prev) => filterValidSelections(prev, validAnsiennitet));
+    // Ansiennitet
+    const validAnsiennitet = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.ansiennitetsgruppe));
+    setSelectedAnsiennitet((prev) => filterValidSelections(prev, validAnsiennitet));
 
-  // Ledernivå
-  const validLederniva = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.lederniva));
-  setSelectedLederniva((prev) => filterValidSelections(prev, validLederniva));
+    // Ledernivå
+    const validLederniva = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.lederniva));
+    setSelectedLederniva((prev) => filterValidSelections(prev, validLederniva));
 
-  // Stilling
-  const validStilling = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.stillingsnavn));
-  setSelectedStilling((prev) => filterValidSelections(prev, validStilling));
-}, [selectedDepartments, rawData]);
+    // Stilling
+    const validStilling = distinct(rawData.filter((d) => selectedDepartments.includes(d.avdeling)).map((d) => d.stillingsnavn));
+    setSelectedStilling((prev) => filterValidSelections(prev, validStilling));
+  }, [selectedDepartments, rawData]);
 
 
   const addSelectAll = (options: string[]) => ["(Alle)", ...options];
-
   const handleToggle = (val: string, selected: string[], setSelected: (val: string[]) => void, all: string[]) => {
     if (val === "(Alle)") {
       setSelected(selected.length === all.length ? [] : [...all]);
@@ -166,7 +170,6 @@ useEffect(() => {
   }, [rawData, selectedDepartments, selectedSections, selectedKjonn, selectedAlder, selectedAnsiennitet, selectedLederniva, selectedStilling]);
 
   const groupKey = selectedSections.length > 0 ? "seksjon" : "avdeling";
-
   const chartData = useMemo(() => {
     const map: Record<string, Record<string, number>> = {};
     const grupper = new Set<string>();
@@ -190,11 +193,18 @@ useEffect(() => {
     });
 
     const data = Array.from(grupper).map((g) => {
-      const total = Object.values(map[g]).reduce((sum, val) => sum + val, 0);
-      const row: Record<string, any> = { gruppe: g };
+      const total = rawData
+        .filter((d) => d[groupKey] === g)
+        .reduce((sum, d) => sum + (d.antall ?? 0), 0);
+      const row: Record<string, any> = {
+        gruppe: g,
+        totalAntall: total,
+      };
+
       Object.entries(map[g]).forEach(([key, val]) => {
         row[key] = total > 0 ? (val / total) * 100 : 0;
       });
+
       return row;
     });
 
@@ -251,7 +261,6 @@ useEffect(() => {
 
     const result: Record<string, string> = {};
 
-    // For stilling: lag mapping stilling → farge
     let stillingColorIndex = 0;
     const stillingColorMap: Record<string, string> = {};
 
@@ -329,19 +338,38 @@ useEffect(() => {
   };
 
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const remToPx = (rem: string) => parseFloat(rem) * 16;
+
   return (
     <div>
-      <Heading level="2" size="medium">Statistikkfilter</Heading>
-      <p style={{ marginBottom: "1rem" }}>
-        Denne visningen gir deg oversikt over grupperte data hvor hver kategori-kombinasjon vises med egen farge.
-      </p>
+      <div style={{ marginBottom: "2rem", marginTop: "1rem" }}>
+        <GuidePanel poster>
+          <Heading level="2" size="small">Om denne visningen</Heading>
+          <BodyLong spacing>
+            I denne visningen kan du selv filtrere og sammenligne data på tvers av avdelinger, seksjoner og ulike grupper som kjønn, alder, ansiennitet, ledernivå og stilling.
+            Målet er å gi deg fleksibilitet til å utforske mangfoldet i organisasjonen og få innsikt i fordelingen av ansatte i ulike deler av strukturen.
+          </BodyLong>
+          <BodyLong spacing>
+            Du kan bruke filtrene til venstre for å skreddersy visningen, og for eksempel sammenligne hvordan kjønnsfordelingen varierer mellom seksjoner,
+            eller hvordan ansiennitet fordeler seg på tvers av stillinger.
+          </BodyLong>
+          <BodyLong spacing>
+            Diagrammet til høyre viser prosentandelene innenfor hver valgt gruppe, og du får også se antall personer representert bak hver andel.
+            Når du beveger musen over grafene, får du opp detaljerte tall.
+          </BodyLong>
+          <BodyLong>
+            Du kan velge flere kombinasjoner samtidig for å analysere mer komplekse mønstre. Målet er å gjøre det enklere å identifisere ubalanser,
+            underrepresentasjon eller trender som bør følges opp i videre mangfoldsarbeid.
+          </BodyLong>
+        </GuidePanel>
+      </div>
 
       {!loading && selectedDepartments.length === 0 && (
         <p style={{ marginBottom: "2rem" }}>Vennligst velg én avdeling for å se statistikk.</p>
       )}
 
-      <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
-        <div style={{ minWidth: "300px", maxWidth: "400px" }}>
+      <div style={{ display: "flex", gap: "3rem", alignItems: "flex-start", paddingTop: "1.5rem" }}>
+        <div style={{ minWidth: "320px", maxWidth: "420px", padding: "1rem 0" }}>
           <Accordion>
             <Accordion.Item title="Avdeling">
               <UNSAFE_Combobox
@@ -556,25 +584,40 @@ useEffect(() => {
             <div>
               <div style={{ height: "calc(100vh - 200px)", maxHeight: "900px" }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.data} margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
+                  <BarChart
+                    data={chartData.data}
+                    margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
+                  >
                     <XAxis
                       dataKey="gruppe"
-                      angle={chartData.data.length > 12 ? -30 : 0}
+                      angle={chartData.data.length > 12 ? -35 : 0}
                       textAnchor={chartData.data.length > 12 ? "end" : "middle"}
                       interval={0}
-                      height={80}
+                      height={chartData.data.length > 12 ? 100 : 60}
                       tick={{
                         fontSize:
                           chartData.data.length <= 6
-                            ? 16
+                            ? remToPx(tokens.AFontSizeLarge)
                             : chartData.data.length <= 10
-                              ? 14
-                              : 12,
+                              ? remToPx(tokens.AFontSizeMedium)
+                              : remToPx(tokens.AFontSizeSmall),
+                        fill: tokens.ATextDefault,
                       }}
                     />
+                    <YAxis
+                      tick={{
+                        fontSize:
+                          chartData.data.length <= 10
+                            ? remToPx(tokens.AFontSizeLarge)
+                            : remToPx(tokens.AFontSizeMedium),
+                        fill: tokens.ATextDefault,
+                      }}
+                      domain={[0, 100]}
+                      tickFormatter={(value) => `${Math.round(value)}%`}
+                    />
 
-                    <YAxis domain={[0, 100]} tickFormatter={(value) => `${Math.round(value)}%`} />
                     <Tooltip content={<CustomTooltip />} />
+
                     {chartData.undergrupper.map((key) => (
                       <Bar
                         key={key}
@@ -583,23 +626,26 @@ useEffect(() => {
                         name={key}
                         fill={fargeMap[key]}
                         opacity={hoveredKey === null || hoveredKey === key ? 1 : 0.2}
-                        radius={[2, 2, 0, 0]} // liten kurve
+                        radius={[2, 2, 0, 0]}
                         stroke="#ffffff"
                         strokeWidth={2}
                       />
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
+
               </div>
 
               <div
                 style={{
-                  marginTop: "2rem",
+                  marginTop: "4rem",
+                  paddingTop: "1rem",
                   paddingBottom: "2rem",
                   display: "flex",
                   justifyContent: "center",
                 }}
               >
+
                 <div
                   style={{
                     display: "grid",
