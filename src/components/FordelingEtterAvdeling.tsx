@@ -6,6 +6,7 @@ import { useAlderData } from "../data/useAlderData";
 import { getAlderFarger } from "../utils/alderFarger";
 import { getKjonnFarger } from "../utils/kjonnFarger";
 import "../css/KjonnPerSeksjonChart.css";
+import { VStack, Chips, ToggleGroup } from "@navikt/ds-react";
 
 type ViewType = "kjonn" | "alder";
 
@@ -43,14 +44,14 @@ function CustomTooltip(props: {
     const { active, payload, label, view, aldersgrupper, alderFarger, kjonnFarger } = props;
     if (!active || !payload || !payload.length) return null;
     const entry = payload[0].payload;
-if (entry.isMasked) {
-    return (
-        <div style={{ background: "#2d3748", color: "#fff", padding: "1rem", borderRadius: "0.5rem" }}>
-            <div style={{ fontWeight: 600 }}>{label}</div>
-            <div style={{ color: "#fff", marginTop: 8 }}>For få personer til å kunne vise data.</div>
-        </div>
-    );
-}
+    if (entry.isMasked) {
+        return (
+            <div style={{ background: "#2d3748", color: "#fff", padding: "1rem", borderRadius: "0.5rem" }}>
+                <div style={{ fontWeight: 600 }}>{label}</div>
+                <div style={{ color: "#fff", marginTop: 8 }}>For få personer til å kunne vise data.</div>
+            </div>
+        );
+    }
     const isGender = view === "kjonn";
     const total = isGender
         ? (entry.femaleCount ?? 0) + (entry.maleCount ?? 0) + (entry.unknownCount ?? 0)
@@ -222,21 +223,38 @@ export default function FordelingEtterAvdeling() {
                 Kjønns- og aldersfordeling per seksjon i valgt avdeling
             </Heading>
             <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling.</p>
-            <div style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem" }}>
-                <button type="button" onClick={() => setView("kjonn")} style={{ border: "none", background: view === "kjonn" ? "#e6f4ea" : "transparent", color: view === "kjonn" ? "#157145" : "#000000", fontWeight: view === "kjonn" ? "bold" : 500, padding: "0.4em 1.4em", borderRadius: 6, cursor: "pointer", boxShadow: view === "kjonn" ? "0 0 0 2px #38a169" : "none", outline: "none", fontSize: "1rem" }}>Kjønn</button>
-                <button type="button" onClick={() => setView("alder")} style={{ border: "none", background: view === "alder" ? "#e6f4ea" : "transparent", color: view === "alder" ? "#157145" : "#000000", fontWeight: view === "alder" ? "bold" : 500, padding: "0.4em 1.4em", borderRadius: 6, cursor: "pointer", boxShadow: view === "alder" ? "0 0 0 2px #38a169" : "none", outline: "none", fontSize: "1rem" }}>Alder</button>
-            </div>
-            <div style={{ marginBottom: "2rem" }}>
-                <strong>Velg en avdeling:</strong>
-                <div style={{ display: "inline-flex", flexWrap: "wrap", gap: "2rem", marginLeft: 12 }}>
-                    {allDepartments.map((dept: string) => (
-                        <label key={dept} style={{ cursor: "pointer", fontWeight: department === dept ? "bold" : 500 }}>
-                            <input type="radio" name="department" value={dept} checked={department === dept} onChange={() => setSelectedDepartment(dept)} style={{ marginRight: 4 }} />
+            <ToggleGroup
+                size="medium"
+                value={view}
+                onChange={(val) => {
+                    if (val === "kjonn" || val === "alder") {
+                        setView(val);
+                    }
+                }}
+                label="Velg visningstype"
+                style={{ marginBottom: "2rem" }}
+            >
+                <ToggleGroup.Item value="kjonn">Kjønn</ToggleGroup.Item>
+                <ToggleGroup.Item value="alder">Alder</ToggleGroup.Item>
+            </ToggleGroup>
+
+            <VStack gap="2" style={{ marginBottom: "4rem" }}>
+                <strong style={{ fontSize: "1rem" }}>Velg en avdeling:</strong>
+                <Chips size="medium">
+                    {allDepartments.map((dept) => (
+                        <Chips.Toggle
+                            key={dept}
+                            selected={department === dept}
+                            onClick={() => setSelectedDepartment(dept)}
+                            checkmark={false} // valgfritt, for renere utseende
+                            variant="action" // standard er action, men tydelig å spesifisere
+                        >
                             {dept}
-                        </label>
+                        </Chips.Toggle>
                     ))}
-                </div>
-            </div>
+                </Chips>
+            </VStack>
+
             <div style={{ display: "flex", justifyContent: "center", gap: 36, marginBottom: 16, fontWeight: 500, alignItems: "center" }}>
                 {view === "kjonn" ? (
                     <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
@@ -257,7 +275,17 @@ export default function FordelingEtterAvdeling() {
                 )}
             </div>
             <ResponsiveContainer width="100%" height={sortedData.length * barHeight + 60}>
-                <BarChart layout="vertical" data={sortedData} margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }} barCategoryGap={12} barSize={barHeight}>
+                {/* <BarChart layout="vertical" data={sortedData} margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }} barCategoryGap={12} barSize={barHeight}> */}
+                <BarChart
+                    layout="vertical"
+                    data={sortedData}
+                    margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }}
+                    barCategoryGap={16} // ← Øk denne!
+                    barGap={8}
+                    barSize={barHeight}
+                >
+
+
                     <XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
                     <YAxis type="category" dataKey="section" width={yAxisWidth} tick={{ fontSize: 17, fontWeight: 500, fill: "#000000" }} />
                     <Tooltip content={(props) => (
