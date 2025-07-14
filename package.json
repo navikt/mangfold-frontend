@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prod": "npm run build && node server.mjs",
-    "postinstall": "patch-package"
+    "prod": "npm run build && node server.mjs"
   },
   "dependencies": {
     "@navikt/ds-css": "^7.25.1",
@@ -42,7 +41,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
