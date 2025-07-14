@@ -1,46 +1,58 @@
-import { useState, useEffect } from 'react';
-import type { RawAlderPerStillingData, TransformedAlderData } from '../types/alderTypes';
+import { useEffect, useState } from "react";
+
+export interface AlderPerStillingEntry {
+  section: string; // Stillingsnavn
+  alderGrupper: Record<string, number>; // { "<30": 12, "30-55": 34, ... }
+  erMaskert: boolean;
+}
 
 export function useAlderPerStilling() {
-    const [data, setData] = useState<TransformedAlderData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<AlderPerStillingEntry[]>([]);
+  const [aldersgrupper, setAldersgrupper] = useState<string[]>([]);
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch('https://mangfold-backend.intern.nav.no/aldersgruppe-per-stilling');
-                const rawData: RawAlderPerStillingData[] = await response.json();
+  useEffect(() => {
+    fetch("https://mangfold-backend.intern.nav.no/aldersgruppe-per-stilling")
+      .then(res => res.json())
+      .then((apiData: any[]) => {
+        // Finn alle unike aldersgrupper
+        const grupperSet = new Set<string>();
+        apiData.forEach(entry => grupperSet.add(entry.gruppe2));
+        const grupper = Array.from(grupperSet);
 
-                // Grupper data etter stillingstittel
-                const stillingMap = new Map<string, Record<string, number>>();
-                
-                rawData.forEach(item => {
-                    if (!stillingMap.has(item.gruppe1)) {
-                        stillingMap.set(item.gruppe1, {});
-                    }
-                    
-                    const alderGrupper = stillingMap.get(item.gruppe1)!;
-                    const antall = (item.kjonnAntall.kvinne ?? 0) + (item.kjonnAntall.mann ?? 0);
-                    alderGrupper[item.gruppe2] = antall;
-                });
+        // Gruppér alle entries per stilling
+        const stillinger = Array.from(new Set(apiData.map(entry => entry.gruppe1)));
 
-                const transformedData = Array.from(stillingMap.entries())
-                    .map(([stilling, alderGrupper]) => ({
-                        section: stilling,
-                        alderGrupper
-                    }));
+        const result: AlderPerStillingEntry[] = stillinger.map(stilling => {
+          const entries = apiData.filter(entry => entry.gruppe1 === stilling);
 
-                setData(transformedData);
-            } catch (err) {
-                setError(err instanceof Error ? err : new Error('Ukjent feil'));
-            } finally {
-                setLoading(false);
-            }
-        }
+          // Maskering: hvis noen av entries er maskert, maskér hele stillingen
+          const isMasked = entries.some(entry => entry.erMaskert);
 
-        fetchData();
-    }, []);
+          // Summer antall per aldersgruppe
+          const alderGrupper: Record<string, number> = {};
+          grupper.forEach(gruppe => {
+            alderGrupper[gruppe] = entries
+              .filter(entry => entry.gruppe2 === gruppe && !entry.erMaskert)
+              .reduce(
+                (sum, entry) =>
+                  sum +
+                  (entry.kjonnAntall?.kvinne ?? 0) +
+                  (entry.kjonnAntall?.mann ?? 0),
+                0
+              );
+          });
 
-    return { data, loading, error };
+          return {
+            section: stilling,
+            alderGrupper,
+            erMaskert: isMasked,
+          };
+        });
+
+        setData(result);
+        setAldersgrupper(grupper);
+      });
+  }, []);
+
+  return { data, aldersgrupper };
 }

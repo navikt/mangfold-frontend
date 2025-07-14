@@ -3,67 +3,57 @@ import { Heading } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useKjonnData } from "../data/useKjonnData";
 import { useAlderData } from "../data/useAlderData";
+import { getAlderFarger } from "../utils/alderFarger";
 import "../css/KjonnPerSeksjonChart.css";
 
-
-interface AlderChartEntry {
-    section: string;
-    department: string;
-    alderGrupper: Record<string, number>;
-    [key: `percent_${string}`]: number;
-}
-
+const MASKERT_FARGE = "#e870a3";
 type ViewType = "kjonn" | "alder";
 
-const ViewDescriptions = {
-    kjonn: "Her ser du kjønnsfordelingen per seksjon innenfor valgt avdeling.",
-    alder: "Her ser du aldersfordelingen per seksjon innenfor valgt avdeling.",
-};
-
-// Endre ALDER_FARGER til å bruke Map for å beholde rekkefølgen
-const ALDER_FARGER = new Map([
-    ["<30", "#0e4d1b"],
-    ["30-50", "#208444"],
-    ["50+", "#32bf66"],
-    ["Ukjent alder", "#999b9d"]
-]);
-
-function normalizePercentages(groups: Record<string, number>): Record<string, number> {
-    const total = Object.values(groups).reduce((sum, val) => sum + val, 0);
-    if (total === 0) return Object.fromEntries(Object.keys(groups).map(k => [k, 0]));
-
+function fordelProsentverdier(grupper: string[], verdier: Record<string, number>) {
+    const total = grupper.reduce((sum, gruppe) => sum + (verdier[gruppe] ?? 0), 0);
     const rawPercent: Record<string, number> = {};
-    for (const key in groups) rawPercent[key] = (groups[key] / total) * 100;
+    grupper.forEach(gruppe => {
+        rawPercent[gruppe] = total > 0 ? (verdier[gruppe] ?? 0) / total * 100 : 0;
+    });
 
     const floored: Record<string, number> = {};
-    for (const key in rawPercent) floored[key] = Math.floor(rawPercent[key]);
+    grupper.forEach(gruppe => {
+        floored[gruppe] = Math.floor(rawPercent[gruppe]);
+    });
 
-    let remainder = 100 - Object.values(floored).reduce((sum, val) => sum + val, 0);
-    const sortedKeys = Object.keys(groups).sort((a, b) =>
-        (rawPercent[b] - floored[b]) - (rawPercent[a] - floored[a])
+    let remainder = 100 - Object.values(floored).reduce((sum, v) => sum + v, 0);
+    const sorted = [...grupper].sort(
+        (a, b) => (rawPercent[b] - floored[b]) - (rawPercent[a] - floored[a])
     );
-
     for (let i = 0; i < remainder; i++) {
-        floored[sortedKeys[i % sortedKeys.length]] += 1;
+        floored[sorted[i % sorted.length]] += 1;
     }
-
     return floored;
 }
 
-
-
-
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip(props: {
+    active?: boolean;
+    payload?: any;
+    label?: string;
+    view: ViewType;
+    aldersgrupper: string[];
+    alderFarger: Map<string, string>;
+}) {
+    const { active, payload, label, view, aldersgrupper, alderFarger } = props;
     if (!active || !payload || !payload.length) return null;
     const entry = payload[0].payload;
-    const isGender = "femaleCount" in entry;
-
-    const ALDER_REKKEFOLGE = ["30-50", "50+", "<30", "Ukjent alder"];
-
+    if (entry.isMasked) {
+        return (
+            <div style={{ background: MASKERT_FARGE, color: "#fff", padding: "1rem", borderRadius: "0.5rem" }}>
+                <div style={{ fontWeight: 600 }}>{label}</div>
+                <div style={{ color: "#fff", marginTop: 8 }}>For få personer til å kunne vise data.</div>
+            </div>
+        );
+    }
+    const isGender = view === "kjonn";
     const total = isGender
         ? (entry.femaleCount ?? 0) + (entry.maleCount ?? 0) + (entry.unknownCount ?? 0)
-        : (Object.values(entry.alderGrupper ?? {}) as number[]).reduce((sum, val) => sum + val, 0);
-
+        : aldersgrupper.reduce((sum, gruppe) => entry[`${gruppe}Count`] ? sum + entry[`${gruppe}Count`] : sum, 0);
 
     return (
         <div style={{ background: "#2d3748", color: "white", padding: "1rem", borderRadius: "0.5rem", fontSize: "14px", lineHeight: "1.6", maxWidth: "300px" }}>
@@ -90,60 +80,77 @@ function CustomTooltip({ active, payload, label }: any) {
                 </>
             ) : (
                 <>
-                    {ALDER_REKKEFOLGE
-                        .filter(gruppe => entry.alderGrupper?.[gruppe] > 0)
-                        .map(gruppe => (
-                            <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                                <span className="gender-square" style={{ background: ALDER_FARGER.get(gruppe) ?? "#ccc" }} />
-                                <span>{gruppe}: {entry[`percent_${gruppe}`] ?? 0}% ({entry.alderGrupper[gruppe]} personer)</span>
-                            </div>
-                        ))
-                    }
+                    {aldersgrupper.map((gruppe: string) => (
+                        <div key={gruppe} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                            <span className="gender-square" style={{ background: alderFarger.get(gruppe) ?? "#ccc" }} />
+                            <span>
+                                {gruppe}: {entry[`${gruppe}Count`] ?? 0} personer, {entry[`percent_${gruppe}`] ?? 0}%
+                            </span>
+                        </div>
+                    ))}
                     <div style={{ marginTop: 8, borderTop: "1px solid #ccc", paddingTop: 6 }}>
                         Totalt: 100% (<strong>{total}</strong> personer)
                     </div>
                 </>
             )}
-
         </div>
     );
 }
 
-
-export default function FordelingEtterAvdelinger() {
+export default function FordelingEtterAvdeling() {
     const [view, setView] = useState<ViewType>("kjonn");
-    const [hovered, setHovered] = useState<string | null>(null);
     const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
-    const { data: kjonnData } = useKjonnData();
-    const { data: alderData } = useAlderData();
+    const { data: kjonnData, departments: kjonnDepartments } = useKjonnData();
+    const { data: alderData, departments: alderDepartments, aldersgrupper } = useAlderData();
+    const alderFarger = useMemo(() => getAlderFarger(aldersgrupper), [aldersgrupper]);
 
+    // Kombiner avdelinger fra begge datasett
     const allDepartments = useMemo(() => {
-        const kjonnDepts = Array.isArray(kjonnData) ? kjonnData.map(d => d.department) : [];
-        const alderDepts = Array.isArray(alderData) ? alderData.map(d => d.department) : [];
-        return Array.from(new Set([...kjonnDepts, ...alderDepts])).sort();
-    }, [kjonnData, alderData]);
+        return Array.from(new Set([
+            ...(kjonnDepartments ?? []),
+            ...(alderDepartments ?? [])
+        ])).sort();
+    }, [kjonnDepartments, alderDepartments]);
 
     const department = selectedDepartment ?? allDepartments?.[0] ?? "";
 
+    // Kjønn-data: maskering og prosenter
     const kjonnChartData = useMemo(() => {
         return (kjonnData ?? [])
-            .filter(d => d.department === department)
+            .filter(entry => entry.department === department)
             .map(entry => {
-                const { female, male, unknown } = normalizePercentages({
-                    female: entry.female,
-                    male: entry.male,
-                    unknown: entry.unknown
-                });
-
+                if (entry.erMaskert === true) {
+                    return {
+                        section: entry.section,
+                        masked: 100,
+                        female: 0,
+                        male: 0,
+                        unknown: 0,
+                        femaleCount: 0,
+                        maleCount: 0,
+                        unknownCount: 0,
+                        isMasked: true,
+                    };
+                }
+                const femaleCount = entry.femaleCount ?? 0;
+                const maleCount = entry.maleCount ?? 0;
+                const unknownCount = entry.unknownCount ?? 0;
+                const grupper = ["female", "male", "unknown"];
+                const tall = {
+                    female: femaleCount,
+                    male: maleCount,
+                    unknown: unknownCount,
+                };
+                const fordelt = fordelProsentverdier(grupper, tall);
                 return {
-                    ...entry,
-                    female,
-                    male,
-                    unknown,
-                    femaleCount: entry.female,
-                    maleCount: entry.male,
-                    unknownCount: entry.unknown,
+                    section: entry.section,
+                    masked: 0,
+                    ...fordelt,
+                    femaleCount,
+                    maleCount,
+                    unknownCount,
+                    isMasked: false,
                 };
             });
     }, [kjonnData, department]);
@@ -152,57 +159,51 @@ export default function FordelingEtterAvdelinger() {
         return kjonnChartData.some(entry => entry.unknownCount > 0);
     }, [kjonnChartData]);
 
-    const alderGrupperDynamisk = useMemo(() => {
-        const grupper = new Set<string>();
-        (alderData ?? []).forEach(entry => {
-            Object.keys(entry.alderGrupper ?? {}).forEach(g => grupper.add(g));
-        });
-        return Array.from(grupper).sort();
-    }, [alderData]);
-
-    const hasUkjentAlder = useMemo(() => {
-        return (alderData ?? [])
-            .filter((entry) => entry.department === department)
-            .some((entry) => Object.keys(entry.alderGrupper).includes("Ukjent alder"));
-    }, [alderData, department]);
-
+    // Alder-data: maskering og prosenter
     const alderChartData = useMemo(() => {
-        return (alderData ?? [])
-            .filter(d => d.department === department)
-            .map(entry => {
-                const total = Object.values(entry.alderGrupper).reduce((sum, cnt) => sum + cnt, 0);
-                const rawPercentages: Record<string, number> = {};
-                alderGrupperDynamisk.forEach(gruppe => {
-                    const val = entry.alderGrupper[gruppe] ?? 0;
-                    rawPercentages[gruppe] = total > 0 ? (val / total) * 100 : 0;
+        const seksjonsnavn = Array.from(new Set((alderData ?? []).filter(entry => entry.department === department).map(entry => entry.section)));
+        return seksjonsnavn.map((seksjon: string) => {
+            const alle = (alderData ?? []).filter(entry => entry.department === department && entry.section === seksjon);
+            const isMasked = alle.some(entry => entry.erMaskert);
+            if (isMasked) {
+                const percentObj: Record<string, number> = {};
+                const countObj: Record<string, number> = {};
+                aldersgrupper.forEach((gruppe: string) => {
+                    percentObj[`percent_${gruppe}`] = 0;
+                    countObj[`${gruppe}Count`] = 0;
                 });
-
-                const floored: Record<string, number> = {};
-                alderGrupperDynamisk.forEach(gruppe => {
-                    floored[gruppe] = Math.floor(rawPercentages[gruppe]);
-                });
-
-                let remainder = 100 - Object.values(floored).reduce((sum, v) => sum + v, 0);
-
-                const sortedByDecimal = [...alderGrupperDynamisk].sort((a, b) =>
-                    (rawPercentages[b] - floored[b]) - (rawPercentages[a] - floored[a])
-                );
-
-                for (let i = 0; i < remainder; i++) {
-                    floored[sortedByDecimal[i % sortedByDecimal.length]] += 1;
-                }
-
-                const percentages: Record<string, number> = {};
-                alderGrupperDynamisk.forEach(gruppe => {
-                    percentages[`percent_${gruppe}`] = floored[gruppe];
-                });
-
                 return {
-                    ...entry,
-                    ...percentages,
-                } as AlderChartEntry;
+                    section: seksjon,
+                    ...percentObj,
+                    ...countObj,
+                    masked: 100,
+                    isMasked: true,
+                };
+            }
+            // Summer alle grupper
+            const tall: Record<string, number> = {};
+            aldersgrupper.forEach((gruppe: string) => { tall[gruppe] = 0; });
+            alle.forEach(entry => {
+                aldersgrupper.forEach((gruppe: string) => {
+                    tall[gruppe] += entry.alderGrupper?.[gruppe] ?? 0;
+                });
             });
-    }, [alderData, department, alderGrupperDynamisk]);
+            const fordelt = fordelProsentverdier(aldersgrupper, tall);
+            const percentObj: Record<string, number> = {};
+            const countObj: Record<string, number> = {};
+            aldersgrupper.forEach((gruppe: string) => {
+                percentObj[`percent_${gruppe}`] = fordelt[gruppe];
+                countObj[`${gruppe}Count`] = tall[gruppe];
+            });
+            return {
+                section: seksjon,
+                ...percentObj,
+                ...countObj,
+                masked: 0,
+                isMasked: false,
+            };
+        });
+    }, [alderData, department, aldersgrupper]);
 
     const sortedData = useMemo(() => {
         return [...(view === "kjonn" ? kjonnChartData : alderChartData)].sort((a, b) =>
@@ -213,26 +214,20 @@ export default function FordelingEtterAvdelinger() {
     const barHeight = 44;
     const yAxisWidth = 260;
 
-
-
-
     return (
         <div>
             <Heading level="2" size="medium" spacing>
                 Kjønns- og aldersfordeling per seksjon i valgt avdeling
             </Heading>
-
-            <p style={{ marginBottom: "1.5rem" }}>{ViewDescriptions[view]}</p>
-
+            <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling.</p>
             <div style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem" }}>
                 <button type="button" onClick={() => setView("kjonn")} style={{ border: "none", background: view === "kjonn" ? "#e6f4ea" : "transparent", color: view === "kjonn" ? "#157145" : "#000000", fontWeight: view === "kjonn" ? "bold" : 500, padding: "0.4em 1.4em", borderRadius: 6, cursor: "pointer", boxShadow: view === "kjonn" ? "0 0 0 2px #38a169" : "none", outline: "none", fontSize: "1rem" }}>Kjønn</button>
                 <button type="button" onClick={() => setView("alder")} style={{ border: "none", background: view === "alder" ? "#e6f4ea" : "transparent", color: view === "alder" ? "#157145" : "#000000", fontWeight: view === "alder" ? "bold" : 500, padding: "0.4em 1.4em", borderRadius: 6, cursor: "pointer", boxShadow: view === "alder" ? "0 0 0 2px #38a169" : "none", outline: "none", fontSize: "1rem" }}>Alder</button>
             </div>
-
             <div style={{ marginBottom: "2rem" }}>
                 <strong>Velg en avdeling:</strong>
                 <div style={{ display: "inline-flex", flexWrap: "wrap", gap: "2rem", marginLeft: 12 }}>
-                    {allDepartments.map(dept => (
+                    {allDepartments.map((dept: string) => (
                         <label key={dept} style={{ cursor: "pointer", fontWeight: department === dept ? "bold" : 500 }}>
                             <input type="radio" name="department" value={dept} checked={department === dept} onChange={() => setSelectedDepartment(dept)} style={{ marginRight: 4 }} />
                             {dept}
@@ -240,84 +235,60 @@ export default function FordelingEtterAvdelinger() {
                     ))}
                 </div>
             </div>
-
             <div style={{ display: "flex", justifyContent: "center", gap: 36, marginBottom: 16, fontWeight: 500, alignItems: "center" }}>
                 {view === "kjonn" ? (
                     <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
                         <>
-                            <span
-                                className="gender-label"
-                                onMouseEnter={() => setHovered("female")}
-                                onMouseLeave={() => setHovered(null)}
-                            >
-                                <span className="gender-square" style={{ background: "#38a169" }} />
-                                Kvinner
-                            </span>
-                            <span
-                                className="gender-label"
-                                onMouseEnter={() => setHovered("male")}
-                                onMouseLeave={() => setHovered(null)}
-                            >
-                                <span className="gender-square" style={{ background: "#1e293b" }} />
-                                Menn
-                            </span>
+                            <span className="gender-label"><span className="gender-square" style={{ background: "#38a169" }} />Kvinner</span>
+                            <span className="gender-label"><span className="gender-square" style={{ background: "#1e293b" }} />Menn</span>
                             {hasUnknown && (
-                                <span
-                                    className="gender-label"
-                                    onMouseEnter={() => setHovered("unknown")}
-                                    onMouseLeave={() => setHovered(null)}
-                                >
-                                    <span className="gender-square" style={{ background: "#999b9d" }} />
-                                    Ukjent
-                                </span>
+                                <span className="gender-label"><span className="gender-square" style={{ background: "#999b9d" }} />Ukjent</span>
                             )}
+                            <span className="gender-label"><span className="gender-square" style={{ background: MASKERT_FARGE }} />Maskert</span>
                         </>
                     </div>
                 ) : (
-                    Array.from(ALDER_FARGER.entries())
-                        .filter(([gruppe]) => gruppe !== "Ukjent alder" || hasUkjentAlder)
-                        .map(([gruppe, farge]) => (
-                            <span
-                                key={gruppe}
-                                className="gender-label"
-                                onMouseEnter={() => setHovered(gruppe)}
-                                onMouseLeave={() => setHovered(null)}
-                            >
-                                <span className="gender-square" style={{ background: farge }} />
-                                {gruppe}
-                            </span>
-                        ))
+                    <>
+                        {aldersgrupper.map((gruppe: string) => (
+                            <span key={gruppe} className="gender-label"><span className="gender-square" style={{ background: alderFarger.get(gruppe) }} />{gruppe}</span>
+                        ))}
+                        <span className="gender-label"><span className="gender-square" style={{ background: MASKERT_FARGE }} />Maskert</span>
+                    </>
                 )}
             </div>
-
             <ResponsiveContainer width="100%" height={sortedData.length * barHeight + 60}>
                 <BarChart layout="vertical" data={sortedData} margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }} barCategoryGap={12} barSize={barHeight}>
-                    <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+                    <XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
                     <YAxis type="category" dataKey="section" width={yAxisWidth} tick={{ fontSize: 17, fontWeight: 500, fill: "#000000" }} />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={(props) => (
+                        <CustomTooltip
+                            {...props}
+                            view={view}
+                            aldersgrupper={aldersgrupper}
+                            alderFarger={alderFarger}
+                        />
+                    )} />
+                    <Bar dataKey="masked" stackId="a" fill={MASKERT_FARGE} isAnimationActive={false} label={false} />
                     {view === "kjonn" ? (
                         <>
-                            <Bar dataKey="female" stackId="a" fill="#38a169" fillOpacity={hovered === "female" || hovered === null ? 1 : 0.3} />
-                            <Bar dataKey="male" stackId="a" fill="#1e293b" fillOpacity={hovered === "male" || hovered === null ? 1 : 0.3} />
+                            <Bar dataKey="female" stackId="a" fill="#38a169" />
+                            <Bar dataKey="male" stackId="a" fill="#1e293b" />
                             {hasUnknown && (
-                                <Bar dataKey="unknown" stackId="a" fill="#999b9d" fillOpacity={hovered === "unknown" || hovered === null ? 1 : 0.3} />
+                                <Bar dataKey="unknown" stackId="a" fill="#999b9d" />
                             )}
                         </>
                     ) : (
-                        Array.from(ALDER_FARGER.keys()).map(gruppe => (
+                        aldersgrupper.map((gruppe: string) => (
                             <Bar
                                 key={gruppe}
                                 dataKey={`percent_${gruppe}`}
                                 stackId="a"
-                                fill={ALDER_FARGER.get(gruppe)}
-                                fillOpacity={hovered === gruppe || hovered === null ? 1 : 0.3}
+                                fill={alderFarger.get(gruppe)}
                             />
                         ))
                     )}
-
                 </BarChart>
             </ResponsiveContainer>
-
             <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#000000", marginTop: "0.5rem" }}>
                 {view === "kjonn" ? "Andel kvinner (hover for antall)" : "Andel i hver aldersgruppe (hover for antall)"}
             </p>

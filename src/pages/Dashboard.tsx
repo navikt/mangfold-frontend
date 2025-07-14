@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMetaData } from "../data/useMetaData";
 import DashboardContent from "../components/DashboardContent";
 import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
-import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
+// import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
 // import Nyrekruttering from "../components/Nyrekruttering";
 // import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
 
@@ -76,7 +76,7 @@ export default function Dashboard() {
       {/* Innholdet */}
       <div style={{ padding: "2rem" }}>
         {activeTab === "hoved" && <DashboardContent />}
-        {activeTab === "kategori" && <StatistikkExplorerTab />}
+        {/* {activeTab === "kategori" && <StatistikkExplorerTab />} */}
         {activeTab === "data" && <DatagrunnlagInfo />}
         {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
         {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}

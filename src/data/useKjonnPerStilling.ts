@@ -7,10 +7,11 @@ export interface RolleKjonn {
     mann?: number;
     ukjent?: number;
   };
+  erMaskert?: boolean;
 }
 
 export interface GenderRoleEntry {
-  section: string; 
+  section: string;
   female: number;
   male: number;
   unknown: number;
@@ -18,14 +19,13 @@ export interface GenderRoleEntry {
   femaleCount: number;
   maleCount: number;
   unknownCount: number;
+  erMaskert?: boolean;
+  isMasked: boolean;
 }
 
 export function useKjonnPerStilling() {
   const [data, setData] = useState<GenderRoleEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    setLoading(true);
     fetch("https://mangfold-backend.intern.nav.no/kjonn-per-stilling")
       .then(res => res.json())
       .then((apiData: RolleKjonn[]) => {
@@ -34,9 +34,9 @@ export function useKjonnPerStilling() {
           const male = role.kjonnAntall.mann ?? 0;
           const unknown = role.kjonnAntall.ukjent ?? 0;
           const total = female + male + unknown;
-
+          const isMasked = !!role.erMaskert;
           return {
-            section: role.gruppe, // <-- Riktig felt her!
+            section: role.gruppe,
             female,
             male,
             unknown,
@@ -44,12 +44,12 @@ export function useKjonnPerStilling() {
             femaleCount: female,
             maleCount: male,
             unknownCount: unknown,
+            erMaskert: role.erMaskert,
+            isMasked,
           };
         });
         setData(result);
-      })
-      .finally(() => setLoading(false));
+      });
   }, []);
-
-  return { data, loading };
+  return { data };
 }
