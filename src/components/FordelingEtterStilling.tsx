@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Heading } from "@navikt/ds-react";
+import { Heading, ToggleGroup } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
 import { useAlderPerStilling } from "../data/useAlderPerStilling";
@@ -210,10 +210,21 @@ export default function FordelingEtterStilling() {
                 Kjønns- og aldersfordeling per stilling
             </Heading>
             <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per stilling.</p>
-            <div style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem" }}>
-                <button type="button" onClick={() => setView("kjonn")} style={{ border: "none", background: view === "kjonn" ? "#e6f4ea" : "transparent", color: view === "kjonn" ? "#157145" : "#000000", fontWeight: view === "kjonn" ? "bold" : 500, padding: "0.4em 1.4em", borderRadius: 6, cursor: "pointer", boxShadow: view === "kjonn" ? "0 0 0 2px #38a169" : "none", outline: "none", fontSize: "1rem" }}>Kjønn</button>
-                <button type="button" onClick={() => setView("alder")} style={{ border: "none", background: view === "alder" ? "#e6f4ea" : "transparent", color: view === "alder" ? "#157145" : "#000000", fontWeight: view === "alder" ? "bold" : 500, padding: "0.4em 1.4em", borderRadius: 6, cursor: "pointer", boxShadow: view === "alder" ? "0 0 0 2px #38a169" : "none", outline: "none", fontSize: "1rem" }}>Alder</button>
-            </div>
+           <ToggleGroup
+        size="medium"
+        value={view}
+        onChange={(val) => {
+          if (val === "kjonn" || val === "alder") {
+            setView(val);
+          }
+        }}
+        label="Velg visningstype"
+        style={{ marginBottom: "2rem" }}
+      >
+        <ToggleGroup.Item value="kjonn">Kjønn</ToggleGroup.Item>
+        <ToggleGroup.Item value="alder">Alder</ToggleGroup.Item>
+      </ToggleGroup>
+
             <div style={{ display: "flex", justifyContent: "center", gap: 36, marginBottom: 16, fontWeight: 500, alignItems: "center" }}>
                 {view === "kjonn" ? (
                     <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: "1rem" }}>
