@@ -52,52 +52,52 @@ export default function StatistikkExplorerTab() {
   const [selectedLederniva, setSelectedLederniva] = useState<string[]>([]);
   const [selectedStilling, setSelectedStilling] = useState<string[]>([]);
 
-//   useEffect(() => {
-//     async function fetchData() {
-//       try {
-//         setLoading(true);
-//         const res = await fetch("https://mangfold-backend.intern.nav.no/ansatt-detaljer");
-//         const json = await res.json();
-//         setRawData(json);
-//       } catch (e) {
-//         console.error("Feil ved henting av data:", e);
-//       } finally {
-//         setLoading(false);
-//       }
-//     }
-//     fetchData();
-//   }, []);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const res = await fetch("https://mangfold-backend.intern.nav.no/ansatt-detaljer");
+        const json = await res.json();
+        setRawData(json);
+      } catch (e) {
+        console.error("Feil ved henting av data:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   const distinct = (arr: any[]) =>
     Array.from(new Set(arr.map((val) => (typeof val === "string" ? val.trim() : "")).filter((v) => v)));
 
-//   const allDepartments = useMemo(() => distinct(rawData.map((d) => d.avdeling)), [rawData]);
+  const allDepartments = useMemo(() => distinct(rawData.map((d) => d.avdeling)), [rawData]);
 
-//   const sectionOptionsByDepartment = useMemo(() => {
-//     const map: Record<string, string[]> = {};
-//     rawData.forEach((d) => {
-//       if (d.avdeling && d.seksjon) {
-//         if (!map[d.avdeling]) map[d.avdeling] = [];
-//         if (!map[d.avdeling].includes(d.seksjon)) {
-//           map[d.avdeling].push(d.seksjon);
-//         }
-//       }
-//     });
-//     return map;
-//   }, [rawData]);
+  const sectionOptionsByDepartment = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    rawData.forEach((d) => {
+      if (d.avdeling && d.seksjon) {
+        if (!map[d.avdeling]) map[d.avdeling] = [];
+        if (!map[d.avdeling].includes(d.seksjon)) {
+          map[d.avdeling].push(d.seksjon);
+        }
+      }
+    });
+    return map;
+  }, [rawData]);
 
 
   useEffect(() => {
     setSelectedSections([]);
   }, [selectedDepartments]);
 
-//   useEffect(() => {
-//     setSelectedKjonn([]);
-//     setSelectedAlder([]);
-//     setSelectedAnsiennitet([]);
-//     setSelectedLederniva([]);
-//     setSelectedStilling([]);
-//   }, [selectedDepartments, selectedSections]);
+  useEffect(() => {
+    setSelectedKjonn([]);
+    setSelectedAlder([]);
+    setSelectedAnsiennitet([]);
+    setSelectedLederniva([]);
+    setSelectedStilling([]);
+  }, [selectedDepartments, selectedSections]);
 
   const addSelectAll = (options: string[]) => ["(Alle)", ...options];
 
@@ -112,28 +112,28 @@ export default function StatistikkExplorerTab() {
   const filteredData = useMemo(() => {
     if (selectedDepartments.length === 0) return [];
 
-//     return rawData.filter((d) => {
-//       const matchesAvdeling = selectedDepartments.includes(d.avdeling);
-//       const matchesSeksjon = selectedSections.length === 0 || selectedSections.includes(d.seksjon);
-//       const matchesKjonn = selectedKjonn.length === 0 || selectedKjonn.includes(d.kjonn);
-//       const matchesAlder = selectedAlder.length === 0 || selectedAlder.includes(d.aldersgruppe);
-//       const matchesAnsiennitet = selectedAnsiennitet.length === 0 || selectedAnsiennitet.includes(d.ansiennitetsgruppe);
-//       const matchesLederniva = selectedLederniva.length === 0 || selectedLederniva.includes(d.lederniva);
-//       const matchesStilling = selectedStilling.length === 0 || selectedStilling.includes(d.stillingsnavn);
+    return rawData.filter((d) => {
+      const matchesAvdeling = selectedDepartments.includes(d.avdeling);
+      const matchesSeksjon = selectedSections.length === 0 || selectedSections.includes(d.seksjon);
+      const matchesKjonn = selectedKjonn.length === 0 || selectedKjonn.includes(d.kjonn);
+      const matchesAlder = selectedAlder.length === 0 || selectedAlder.includes(d.aldersgruppe);
+      const matchesAnsiennitet = selectedAnsiennitet.length === 0 || selectedAnsiennitet.includes(d.ansiennitetsgruppe);
+      const matchesLederniva = selectedLederniva.length === 0 || selectedLederniva.includes(d.lederniva);
+      const matchesStilling = selectedStilling.length === 0 || selectedStilling.includes(d.stillingsnavn);
 
-//       return (
-//         matchesAvdeling &&
-//         matchesSeksjon &&
-//         matchesKjonn &&
-//         matchesAlder &&
-//         matchesAnsiennitet &&
-//         matchesLederniva &&
-//         matchesStilling
-//       );
-//     });
-//   }, [rawData, selectedDepartments, selectedSections, selectedKjonn, selectedAlder, selectedAnsiennitet, selectedLederniva, selectedStilling]);
+      return (
+        matchesAvdeling &&
+        matchesSeksjon &&
+        matchesKjonn &&
+        matchesAlder &&
+        matchesAnsiennitet &&
+        matchesLederniva &&
+        matchesStilling
+      );
+    });
+  }, [rawData, selectedDepartments, selectedSections, selectedKjonn, selectedAlder, selectedAnsiennitet, selectedLederniva, selectedStilling]);
 
-//   const groupKey = selectedSections.length > 0 ? "seksjon" : "avdeling";
+  const groupKey = selectedSections.length > 0 ? "seksjon" : "avdeling";
 
   const chartData = useMemo(() => {
     const map: Record<string, Record<string, number>> = {};
