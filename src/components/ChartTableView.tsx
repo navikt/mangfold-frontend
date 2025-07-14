@@ -1,112 +1,99 @@
 import { useState } from "react";
+import { Table } from "@navikt/ds-react";
 import GenderBarChart from "./GenderBarChart";
-import {
-  ChevronUpIcon,
-  ChevronDownIcon,
-  ArrowsUpDownIcon,
-} from "@navikt/aksel-icons";
 
-interface Props {
-  showTable: boolean;
-  aggregatedData: {
-    label: string;
-    female: number;
-    male: number;
-    femaleCount?: number;
-    maleCount?: number;
-  }[];
+interface AggregatedData {
+  label: string;
+  female: number;
+  male: number;
+  femaleCount?: number;
+  maleCount?: number;
 }
 
 type SortKey = "label" | "female" | "male";
-type SortOrder = "asc" | "desc";
+type SortDirection = "ascending" | "descending" | "none";
+type SortState = { orderBy: SortKey; direction: SortDirection };
+
+interface Props {
+  showTable: boolean;
+  aggregatedData: AggregatedData[];
+}
 
 export default function ChartTableView({ showTable, aggregatedData }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>("label");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [sort, setSort] = useState<SortState>({
+    orderBy: "label",
+    direction: "ascending"
+  });
 
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortOrder(prev => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortOrder("asc");
-    }
+  const handleSortChange = (sortKey: string) => {
+    setSort(prev => {
+      if (prev.orderBy === sortKey) {
+        // Toggle direction
+        const nextDirection = prev.direction === "ascending" ? "descending" : "ascending";
+        return { orderBy: sortKey as SortKey, direction: nextDirection };
+      } else {
+        // Ny kolonne, start med ascending
+        return { orderBy: sortKey as SortKey, direction: "ascending" };
+      }
+    });
   };
 
+  // Sorter data i henhold til sort-state
   const sortedData = [...aggregatedData].sort((a, b) => {
-    const aValue = a[sortKey];
-    const bValue = b[sortKey];
-
+    const aValue = a[sort.orderBy];
+    const bValue = b[sort.orderBy];
+    if (sort.direction === "none") return 0;
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortOrder === "asc"
+      return sort.direction === "ascending"
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     } else if (typeof aValue === "number" && typeof bValue === "number") {
-      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+      return sort.direction === "ascending"
+        ? aValue - bValue
+        : bValue - aValue;
     }
     return 0;
   });
 
-  const renderIcon = (key: SortKey) => {
-    if (sortKey !== key) return <ArrowsUpDownIcon fontSize="1rem" aria-hidden />;
-    return sortOrder === "asc" ? (
-      <ChevronUpIcon fontSize="1rem" aria-hidden />
-    ) : (
-      <ChevronDownIcon fontSize="1rem" aria-hidden />
-    );
-  };
+  if (!showTable) return <GenderBarChart data={aggregatedData} />;
 
-  const renderTable = () => (
-    <table className="gender-table">
-      <thead>
-        <tr>
-          {(["label", "female", "male"] as SortKey[]).map((key) => {
-            const labelMap: Record<SortKey, string> = {
-              label: "Avdeling",
-              female: "Kvinner",
-              male: "Menn",
-            };
-
-            return (
-              <th
-                key={key}
-                onClick={() => handleSort(key)}
-                style={{
-                  cursor: "pointer",
-                  fontWeight: sortKey === key ? 700 : 500,
-                  userSelect: "none",
-                  padding: "0.5rem 1rem",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                  {labelMap[key]} {renderIcon(key)}
-                </div>
-              </th>
-            );
-          })}
-        </tr>
-      </thead>
-      <tbody>
+  return (
+    <Table
+      sort={{ orderBy: sort.orderBy, direction: sort.direction }}
+      onSortChange={handleSortChange}
+    >
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeader sortKey="label" sortable>
+            Avdeling
+          </Table.ColumnHeader>
+          <Table.ColumnHeader sortKey="female" sortable>
+            Kvinner
+          </Table.ColumnHeader>
+          <Table.ColumnHeader sortKey="male" sortable>
+            Menn
+          </Table.ColumnHeader>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {sortedData.map((entry, idx) => (
-          <tr key={idx}>
-            <td>{entry.label}</td>
-            <td>
+          <Table.Row key={idx}>
+            <Table.DataCell>{entry.label}</Table.DataCell>
+            <Table.DataCell>
               <strong>{entry.female}%</strong>
-              <div style={{ fontSize: "0.85rem", color: "#666" }}>
+              <div style={{ fontSize: "0.93em", color: "#888" }}>
                 ({entry.femaleCount ?? "–"} personer)
               </div>
-            </td>
-            <td>
+            </Table.DataCell>
+            <Table.DataCell>
               <strong>{entry.male}%</strong>
-              <div style={{ fontSize: "0.85rem", color: "#666" }}>
+              <div style={{ fontSize: "0.93em", color: "#888" }}>
                 ({entry.maleCount ?? "–"} personer)
               </div>
-            </td>
-          </tr>
+            </Table.DataCell>
+          </Table.Row>
         ))}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table>
   );
-
-  return showTable ? renderTable() : <GenderBarChart data={aggregatedData} />;
 }

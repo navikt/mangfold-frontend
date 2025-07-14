@@ -3,7 +3,7 @@ import GenderIconCard from "./GenderIconCard";
 import "../css/GenderIconCard.css";
 import StatistikkPanel from "./StatistikkPanel";
 import StatistikkExplorer from "./StatistikkExplorer";
-import "../css/ DashboardContent.css"
+import "../css/DashboardContent.css"
 import { useEffect, useState } from "react";
 
 type KjønnStatistikk = {

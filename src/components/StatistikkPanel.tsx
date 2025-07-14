@@ -261,7 +261,7 @@ export default function StatistikkPanel() {
                 interval={0}
                 tick={<CustomizedAxisTick />}
               />
-              <YAxis tickFormatter={(value) => `${value}%`} />
+              <YAxis tickFormatter={(value) => `${value}%`} domain={[0, 100]} />
               <Tooltip content={<CustomTooltip />} />
               <Bar
                 dataKey="female"
