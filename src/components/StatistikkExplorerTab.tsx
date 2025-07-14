@@ -18,13 +18,19 @@ import * as tokens from "@navikt/ds-tokens/dist/tokens";
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const total = payload.reduce((acc: number, entry: any) => acc + entry.payload[entry.dataKey], 0);
+
     return (
       <div style={{ background: "white", border: "1px solid #ccc", padding: "0.5rem" }}>
         {payload.map((entry: any, index: number) => {
           const verdi = entry.payload[entry.dataKey];
+          const antall = Math.round((verdi / 100) * total);
+
           return (
             <div key={`item-${index}`} style={{ color: entry.color }}>
-              <strong>{entry.name}</strong>: {verdi.toFixed(1)}% ({Math.round((verdi / 100) * total)} personer)
+              <strong>{entry.name}</strong>:{" "}
+              {antall < 5
+                ? "For få personer til å vise data"
+                : `${verdi.toFixed(1)}% (${antall} personer)`}
             </div>
           );
         })}
@@ -33,6 +39,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   }
   return null;
 };
+
 
 export default function StatistikkExplorerTab() {
   const [rawData, setRawData] = useState<any[]>([]);
