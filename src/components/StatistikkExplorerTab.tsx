@@ -16,8 +16,16 @@ import {
 import * as tokens from "@navikt/ds-tokens/dist/tokens";
 import { GuidePanel } from "@navikt/ds-react";
 
+const CustomTooltip = ({
+  active,
+  payload,
+  shouldShowCountAxis,
+}: {
+  active?: boolean;
+  payload?: any;
+  shouldShowCountAxis: boolean;
+}) => {
 
-const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const total = payload[0]?.payload?.totalAntall ?? 0;
 
@@ -25,7 +33,9 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div style={{ background: "white", border: "1px solid #ccc", padding: "0.5rem" }}>
         {payload.map((entry: any, index: number) => {
           const prosent = entry.value;
-          const antall = Math.round((prosent / 100) * total);
+          const antall = shouldShowCountAxis
+            ? entry.value
+            : Math.round((prosent / 100) * total);
 
           const erTotalt = entry.name === "Totalt" || prosent === 100;
 
@@ -33,10 +43,14 @@ const CustomTooltip = ({ active, payload }: any) => {
             <div key={`item-${index}`} style={{ color: entry.color }}>
               <strong>{entry.name}</strong>:{" "}
               {erTotalt
-                ? `${prosent.toFixed(1)}% (${total} personer)`
-                : antall < 5
-                  ? "For få personer til å vise data"
-                  : `${prosent.toFixed(1)}% (${antall} personer)`}
+                ? shouldShowCountAxis
+                  ? `${total} personer`
+                  : `${prosent.toFixed(1)}% (${total} personer)`
+                : shouldShowCountAxis
+                  ? `${antall} personer`
+                  : antall < 5
+                    ? "For få personer til å vise data"
+                    : `${prosent.toFixed(1)}% (${antall} personer)`}
             </div>
           );
         })}
@@ -45,6 +59,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   }
   return null;
 };
+
 
 export default function StatistikkExplorerTab() {
   const [rawData, setRawData] = useState<any[]>([]);
@@ -91,9 +106,17 @@ export default function StatistikkExplorerTab() {
     return map;
   }, [rawData]);
 
+  const shouldShowCountAxis =
+    selectedKjonn.length === 0 &&
+    selectedAlder.length === 0 &&
+    selectedAnsiennitet.length === 0 &&
+    selectedLederniva.length === 0 &&
+    selectedStilling.length === 0;
+
+
+
   const filterValidSelections = (selected: string[], available: string[]) =>
     selected.filter((val) => available.includes(val));
-
 
   useEffect(() => {
     setSelectedSections([]);
@@ -201,8 +224,16 @@ export default function StatistikkExplorerTab() {
         totalAntall: total,
       };
 
+      // Object.entries(map[g]).forEach(([key, val]) => {
+      //   row[key] = total > 0 ? (val / total) * 100 : 0;
+      // });
+
       Object.entries(map[g]).forEach(([key, val]) => {
-        row[key] = total > 0 ? (val / total) * 100 : 0;
+        if (shouldShowCountAxis) {
+          row[key] = val; // vis antall
+        } else {
+          row[key] = total > 0 ? (val / total) * 100 : 0; // vis prosent
+        }
       });
 
       return row;
@@ -604,6 +635,7 @@ export default function StatistikkExplorerTab() {
                         fill: tokens.ATextDefault,
                       }}
                     />
+
                     <YAxis
                       tick={{
                         fontSize:
@@ -612,11 +644,18 @@ export default function StatistikkExplorerTab() {
                             : remToPx(tokens.AFontSizeMedium),
                         fill: tokens.ATextDefault,
                       }}
-                      domain={[0, 100]}
-                      tickFormatter={(value) => `${Math.round(value)}%`}
+                      domain={[0, 'auto']}
+                      tickFormatter={(value: any) =>
+                        shouldShowCountAxis
+                          ? `${Math.round(value)}` // <-- alltid string!
+                          : `${Math.round(value)}%`
+                      }
+
                     />
 
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={(props) => <CustomTooltip {...props} shouldShowCountAxis={shouldShowCountAxis} />} />
+
+
 
                     {chartData.undergrupper.map((key) => (
                       <Bar
