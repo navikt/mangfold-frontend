@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import * as tokens from "@navikt/ds-tokens/dist/tokens";
 import { GuidePanel } from "@navikt/ds-react";
+import { CustomizedAxisTick } from "./CustomizedAxisTick";
 
 const MIN_ANTALL_FOR_VISNING = 5;
 
@@ -659,19 +660,11 @@ const visibleSum = Object.entries(map[g])
                   >
                     <XAxis
                       dataKey="gruppe"
-                      angle={chartData.data.length > 12 ? -35 : 0}
-                      textAnchor={chartData.data.length > 12 ? "end" : "middle"}
                       interval={0}
-                      height={chartData.data.length > 12 ? 100 : 60}
-                      tick={{
-                        fontSize:
-                          chartData.data.length <= 6
-                            ? remToPx(tokens.AFontSizeLarge)
-                            : chartData.data.length <= 10
-                              ? remToPx(tokens.AFontSizeMedium)
-                              : remToPx(tokens.AFontSizeSmall),
-                        fill: tokens.ATextDefault,
-                      }}
+                      height={chartData.data.length > 9 ? 100 : 60}
+                      tick={(props) => (
+                        <CustomizedAxisTick {...props} visibleTicksCount={chartData.data.length} />
+                      )}
                     />
 
                     <YAxis
@@ -689,7 +682,6 @@ const visibleSum = Object.entries(map[g])
                           : `${Math.round(value)}%`
                       }
                     />
-
                     <Tooltip content={(props) => <CustomTooltip {...props} shouldShowCountAxis={shouldShowCountAxis} />} />
 
                     {chartData.undergrupper.map((key) => (
@@ -729,44 +721,46 @@ const visibleSum = Object.entries(map[g])
                     maxWidth: "1200px",
                   }}
                 >
-                  {chartData.undergrupper.map((key) => {
-                    const isHovered = hoveredKey === key;
-                    return (
-                      <div
-                        key={key}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          cursor: "pointer",
-                          backgroundColor: isHovered ? "#f0f0f0" : "transparent",
-                          borderRadius: "4px",
-                          padding: "2px 4px",
-                          transition: "background-color 0.2s ease",
-                        }}
-                        onMouseEnter={() => setHoveredKey(key)}
-                        onMouseLeave={() => setHoveredKey(null)}
-                      >
+                  {chartData.undergrupper
+                    .filter((key) => key !== "Totalt")
+                    .map((key) => {
+                      const isHovered = hoveredKey === key;
+                      return (
                         <div
+                          key={key}
                           style={{
-                            width: 14,
-                            height: 14,
-                            backgroundColor: fargeMap[key],
-                            flexShrink: 0,
-                            border: isHovered ? "2px solid black" : "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            cursor: "pointer",
+                            backgroundColor: isHovered ? "#f0f0f0" : "transparent",
+                            borderRadius: "4px",
+                            padding: "2px 4px",
+                            transition: "background-color 0.2s ease",
                           }}
-                        />
-                        <span
-                          style={{
-                            fontWeight: isHovered ? "bold" : "normal",
-                            color: isHovered ? "#222" : "inherit",
-                          }}
+                          onMouseEnter={() => setHoveredKey(key)}
+                          onMouseLeave={() => setHoveredKey(null)}
                         >
-                          {key}
-                        </span>
-                      </div>
-                    );
-                  })}
+                          <div
+                            style={{
+                              width: 14,
+                              height: 14,
+                              backgroundColor: fargeMap[key],
+                              flexShrink: 0,
+                              border: isHovered ? "2px solid black" : "none",
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontWeight: isHovered ? "bold" : "normal",
+                              color: isHovered ? "#222" : "inherit",
+                            }}
+                          >
+                            {key}
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </div>
