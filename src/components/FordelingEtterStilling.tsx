@@ -9,7 +9,6 @@ import "../css/KjonnPerSeksjonChart.css";
 
 type ViewType = "kjonn" | "alder";
 
-// Bruk rekkefølgen fra backend og filtrer på grupper med personer
 function aktuelleAldersgrupperForStillinger(alderData: any[], aldersgrupper: string[]) {
   return aldersgrupper.filter(gruppe =>
     alderData.some(entry => (entry.alderGrupper[gruppe] ?? 0) > 0)
@@ -159,12 +158,10 @@ export default function FordelingEtterStilling() {
   const alderFarger = useMemo(() => getAlderFarger(aldersgrupper), [aldersgrupper]);
   const kjonnFarger = useMemo(() => getKjonnFarger(), []);
 
-  // Behold rekkefølgen fra backend og filtrer på grupper med personer
   const aktuelleAldersgrupper = useMemo(() => {
     return aktuelleAldersgrupperForStillinger(alderData, aldersgrupper);
   }, [alderData, aldersgrupper]);
 
-  // Kjønn-data: maskering og prosenter
   const kjonnChartData = useMemo(() => {
     return (kjonnData ?? []).map(entry => {
       if (entry.isMasked === true) {
@@ -206,9 +203,7 @@ export default function FordelingEtterStilling() {
     return kjonnChartData.some(entry => entry.unknownCount > 0);
   }, [kjonnChartData]);
 
-  // Alder-data: maskering og prosenter
   const alderChartData = useMemo(() => {
-    // Aggregér per stilling
     const stillingsnavn = Array.from(new Set((alderData ?? []).map((d: any) => d.section)));
     return stillingsnavn.map((stilling: string) => {
       const alle = (alderData ?? []).filter((d: any) => d.section === stilling);
@@ -229,7 +224,7 @@ export default function FordelingEtterStilling() {
           isMasked: true,
         };
       }
-      // Summer alle grupper
+
       const tall: Record<string, number> = {};
       grupper.forEach((gruppe: string) => { tall[gruppe] = 0; });
       alle.forEach((entry: any) => {
@@ -237,6 +232,7 @@ export default function FordelingEtterStilling() {
           tall[gruppe] += entry.alderGrupper?.[gruppe] ?? 0;
         });
       });
+
       const fordelt = fordelProsentverdier(grupper, tall);
       const percentObj: Record<string, number> = {};
       const countObj: Record<string, number> = {};
@@ -263,31 +259,35 @@ export default function FordelingEtterStilling() {
   const barHeight = 44;
   const yAxisWidth = 260;
 
-  // Sjekk om vi har skjulte verdier i datasettet
   const hasMasked = useMemo(() => {
     return sortedData.some(entry => entry.isMasked);
   }, [sortedData]);
 
+  
+
   return (
     <div>
       <Heading level="2" size="medium" spacing>
-        Kjønns- og aldersfordeling per stilling
+        Kjønns- og aldersfordeling per seksjon i valgt avdeling
       </Heading>
-      <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per stilling.</p>
-      <ToggleGroup
-        size="medium"
-        value={view}
-        onChange={(val) => {
-          if (val === "kjonn" || val === "alder") {
-            setView(val);
-          }
-        }}
-        label="Velg visningstype"
-        style={{ marginBottom: "2rem" }}
-      >
-        <ToggleGroup.Item value="kjonn">Kjønn</ToggleGroup.Item>
-        <ToggleGroup.Item value="alder">Alder</ToggleGroup.Item>
-      </ToggleGroup>
+      <p style={{ marginBottom: "1.5rem" }}>
+        Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling.
+      </p>
+      <div className="visningstype-toggle">
+        <ToggleGroup
+          size="medium"
+          value={view}
+          onChange={(val) => {
+            if (val === "kjonn" || val === "alder") {
+              setView(val);
+            }
+          }}
+          label="Velg visningstype"
+        >
+          <ToggleGroup.Item value="kjonn">Kjønn</ToggleGroup.Item>
+          <ToggleGroup.Item value="alder">Alder</ToggleGroup.Item>
+        </ToggleGroup>
+      </div>
 
       <LegendBar
         view={view}
@@ -311,13 +311,13 @@ export default function FordelingEtterStilling() {
               kjonnFarger={kjonnFarger}
             />
           )} />
-          <Bar dataKey="masked" stackId="a" fill={kjonnFarger.get("masked")} isAnimationActive={false} label={false} />
+          <Bar dataKey="masked" stackId="a" fill={kjonnFarger.get("masked")} isAnimationActive={false} label={false} stroke="#ffffff" strokeWidth={2} />
           {view === "kjonn" ? (
             <>
-              <Bar dataKey="female" stackId="a" fill={kjonnFarger.get("female")} />
-              <Bar dataKey="male" stackId="a" fill={kjonnFarger.get("male")} />
+              <Bar dataKey="female" stackId="a" fill={kjonnFarger.get("female")} stroke="#ffffff" strokeWidth={2} />
+              <Bar dataKey="male" stackId="a" fill={kjonnFarger.get("male")} stroke="#ffffff" strokeWidth={2} />
               {hasUnknown && (
-                <Bar dataKey="unknown" stackId="a" fill={kjonnFarger.get("unknown")} />
+                <Bar dataKey="unknown" stackId="a" fill={kjonnFarger.get("unknown")} stroke="#ffffff" strokeWidth={2} />
               )}
             </>
           ) : (
@@ -327,6 +327,8 @@ export default function FordelingEtterStilling() {
                 dataKey={`percent_${gruppe}`}
                 stackId="a"
                 fill={alderFarger.get(gruppe)}
+                stroke="#ffffff"
+                strokeWidth={2}
               />
             ))
           )}

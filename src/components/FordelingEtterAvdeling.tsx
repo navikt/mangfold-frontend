@@ -253,6 +253,7 @@ export default function FordelingEtterAvdeling() {
         grupper.forEach((gruppe: string) => {
           tall[gruppe] = entry.alderGrupper[gruppe] ?? 0;
         });
+        
         const fordelt = fordelProsentverdier(grupper, tall);
         const percentObj: Record<string, number> = {};
         const countObj: Record<string, number> = {};
@@ -338,10 +339,9 @@ export default function FordelingEtterAvdeling() {
           layout="vertical"
           data={sortedData}
           margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }}
-          barCategoryGap={16}
-          barGap={8}
-          barSize={barHeight}
-        >
+          barSize={barHeight}        
+          >
+
           <XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
           <YAxis type="category" dataKey="section" width={yAxisWidth} tick={{ fontSize: 17, fontWeight: 500, fill: "#000000" }} />
           <Tooltip content={(props) => (
@@ -353,13 +353,14 @@ export default function FordelingEtterAvdeling() {
               kjonnFarger={kjonnFarger}
             />
           )} />
-          <Bar dataKey="masked" stackId="a" fill={kjonnFarger.get("masked")} isAnimationActive={false} label={false} />
+          <Bar dataKey="masked" stackId="a" fill={kjonnFarger.get("masked")} isAnimationActive={false} label={false} stroke="#ffffff" strokeWidth={2} />
           {view === "kjonn" ? (
             <>
-              <Bar dataKey="female" stackId="a" fill={kjonnFarger.get("female")} />
-              <Bar dataKey="male" stackId="a" fill={kjonnFarger.get("male")} />
+              <Bar dataKey="female" stackId="a" fill={kjonnFarger.get("female")} stroke="#ffffff" strokeWidth={2} />
+              <Bar dataKey="male" stackId="a" fill={kjonnFarger.get("male")} stroke="#ffffff" strokeWidth={2} />
+
               {hasUnknown && (
-                <Bar dataKey="unknown" stackId="a" fill={kjonnFarger.get("unknown")} />
+                <Bar dataKey="unknown" stackId="a" fill={kjonnFarger.get("unknown")} stroke="#ffffff" strokeWidth={2} />
               )}
             </>
           ) : (
@@ -369,6 +370,8 @@ export default function FordelingEtterAvdeling() {
                 dataKey={`percent_${gruppe}`}
                 stackId="a"
                 fill={alderFarger.get(gruppe)}
+                stroke="#ffffff" 
+                strokeWidth={2}
               />
             ))
           )}

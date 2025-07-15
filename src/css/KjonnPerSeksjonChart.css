@@ -112,3 +112,10 @@
   font-weight: 500;
   color: #1e293b;
 }
+
+.visningstype-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
