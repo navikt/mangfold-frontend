@@ -16,7 +16,8 @@ export function useAlderData() {
     fetch("https://mangfold-backend.intern.nav.no/aldersgrupper-per-avdeling-seksjoner")
       .then(res => res.json())
       .then((apiData: any[]) => {
-        const grupperSet = new Set<string>();
+        // Behold aldersgruppe-rekkefølge fra backend, de skal være sortert fra minst til størst
+        const grupperArray: string[] = [];
         const result: AlderEntry[] = [];
         apiData.forEach(avd => {
           const department = avd.avdeling;
@@ -24,7 +25,7 @@ export function useAlderData() {
             const section = seksjon.seksjon || seksjon.gruppe;
             const alderGrupper: Record<string, number> = {};
             Object.entries(seksjon.aldersgrupper ?? {}).forEach(([alder, kjonnObj]: [string, any]) => {
-              grupperSet.add(alder);
+              if (!grupperArray.includes(alder)) grupperArray.push(alder);
               alderGrupper[alder] =
                 (kjonnObj.kvinne ?? 0) + (kjonnObj.mann ?? 0);
             });
@@ -38,7 +39,7 @@ export function useAlderData() {
         });
         setData(result);
         setDepartments(Array.from(new Set(result.map(d => d.department))));
-        setAldersgrupper(Array.from(grupperSet).sort());
+        setAldersgrupper(grupperArray);
       });
   }, []);
   return { data, departments, aldersgrupper };

@@ -14,10 +14,11 @@ export function useAlderPerStilling() {
     fetch("https://mangfold-backend.intern.nav.no/aldersgruppe-per-stilling")
       .then(res => res.json())
       .then((apiData: any[]) => {
-        // Finn alle unike aldersgrupper
-        const grupperSet = new Set<string>();
-        apiData.forEach(entry => grupperSet.add(entry.gruppe2));
-        const grupper = Array.from(grupperSet);
+        // Behold rekkefølge på aldersgrupper som backend gir (første gang de dukker opp)
+        const grupperArray: string[] = [];
+        apiData.forEach(entry => {
+          if (!grupperArray.includes(entry.gruppe2)) grupperArray.push(entry.gruppe2);
+        });
 
         // Gruppér alle entries per stilling
         const stillinger = Array.from(new Set(apiData.map(entry => entry.gruppe1)));
@@ -30,7 +31,7 @@ export function useAlderPerStilling() {
 
           // Summer antall per aldersgruppe
           const alderGrupper: Record<string, number> = {};
-          grupper.forEach(gruppe => {
+          grupperArray.forEach(gruppe => {
             alderGrupper[gruppe] = entries
               .filter(entry => entry.gruppe2 === gruppe && !entry.erMaskert)
               .reduce(
@@ -50,7 +51,7 @@ export function useAlderPerStilling() {
         });
 
         setData(result);
-        setAldersgrupper(grupper);
+        setAldersgrupper(grupperArray);
       });
   }, []);
 
