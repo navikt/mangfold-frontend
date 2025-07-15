@@ -6,17 +6,19 @@ metadata:
   labels:
     team: heda
 spec:       
-  port: 3000                      
+  port: 3000                    
   ingresses:
     - https://mangfold.intern.dev.nav.no
     - https://mangfold.ansatt.dev.nav.no
   replicas:
-    min: 2
-    max: 4
+    min: 1
+    max: 2
   resources:
     requests:
-      cpu: 10m
-      memory: 32Mi
+      cpu: 22m
+      memory: 160Mi
+    limits:
+      memory: 255Mi
   accessPolicy:
     outbound:
       rules:

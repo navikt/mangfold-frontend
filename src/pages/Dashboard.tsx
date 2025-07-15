@@ -53,13 +53,21 @@ export default function Dashboard() {
             Nyrekruttering
           </Button> */}
 
-          {/* <Tooltip content="Oppsigelse er ikke tilgjengelig fordi historiske data mangler.">
+          { <Tooltip content="Visualiseringer for nyrekruttering er ikke tilgjengelige fordi historiske data mangler.">
+            <span>
+              <Button variant="secondary" disabled>
+                Nyrekruttering
+              </Button>
+            </span>
+          </Tooltip> }
+
+          { <Tooltip content="Visualiseringer for oppsigelse er ikke tilgjengelige fordi historiske data mangler.">
             <span>
               <Button variant="secondary" disabled>
                 Oppsigelse
               </Button>
             </span>
-          </Tooltip> */}
+          </Tooltip> }
         </div>
 
         {lastUpdated && (
