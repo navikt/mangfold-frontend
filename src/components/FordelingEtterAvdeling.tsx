@@ -288,9 +288,9 @@ export default function FordelingEtterAvdeling() {
   return (
     <div>
       <Heading level="2" size="medium" spacing>
-        Kjønns- og aldersfordeling per seksjon i valgt avdeling
+        Kjønns- og aldersfordeling per seksjon
       </Heading>
-      <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling.</p>
+      <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling. Hold musen over en seksjon for å se detaljer om fordelingen.</p>
       <ToggleGroup
         size="medium"
         value={view}
@@ -377,9 +377,6 @@ export default function FordelingEtterAvdeling() {
           )}
         </BarChart>
       </ResponsiveContainer>
-      <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#000000", marginTop: "0.5rem" }}>
-        {view === "kjonn" ? "Andel kvinner (hover for antall)" : "Andel i hver aldersgruppe (hover for antall)"}
-      </p>
     </div>
   );
 }

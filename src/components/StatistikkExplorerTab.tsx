@@ -416,27 +416,24 @@ const visibleSum = Object.entries(map[g])
         <GuidePanel poster>
           <Heading level="2" size="small">Om denne visningen</Heading>
           <BodyLong spacing>
-            I denne visningen kan du selv filtrere og sammenligne data på tvers av avdelinger, seksjoner og ulike grupper som kjønn, alder, ansiennitet, ledernivå og stilling.
-            Målet er å gi deg fleksibilitet til å utforske mangfoldet i organisasjonen og få innsikt i fordelingen av ansatte i ulike deler av strukturen.
+            Her kan du selv filtrere og sammenligne data på tvers av avdelinger og seksjoner. Du kan vise fordeling på gruppene kjønn, alder, ansiennitet, ledernivå og stilling.
           </BodyLong>
           <BodyLong spacing>
             Du kan bruke filtrene til venstre for å skreddersy visningen, og for eksempel sammenligne hvordan kjønnsfordelingen varierer mellom seksjoner,
             eller hvordan ansiennitet fordeler seg på tvers av stillinger.
           </BodyLong>
           <BodyLong spacing>
-            Diagrammet til høyre viser prosentandelene innenfor hver valgt gruppe, og du får også se antall personer representert bak hver andel.
             Når du beveger musen over grafene, får du opp detaljerte tall.
           </BodyLong>
           <BodyLong>
-            Du kan velge flere kombinasjoner samtidig for å analysere mer komplekse mønstre. Målet er å gjøre det enklere å identifisere ubalanser,
-            underrepresentasjon eller trender som bør følges opp i videre mangfoldsarbeid.
+            Du kan velge flere kombinasjoner samtidig for å analysere mer komplekse mønstre. Obs: Velger du for mange filtre kan grafen bli uoversiktlig. Grupperinger som er for små blir ikke vist av personvernshensyn.
           </BodyLong>
         </GuidePanel>
       </div>
 
-      {!loading && selectedDepartments.length === 0 && (
+      {/* {!loading && selectedDepartments.length === 0 && (
         <p style={{ marginBottom: "2rem" }}>Vennligst velg én avdeling for å se statistikk.</p>
-      )}
+      )} */}
 
       <div style={{ display: "flex", gap: "3rem", alignItems: "flex-start", paddingTop: "1.5rem" }}>
         <div style={{ minWidth: "320px", maxWidth: "420px", padding: "1rem 0" }}>
@@ -649,7 +646,7 @@ const visibleSum = Object.entries(map[g])
           {loading ? (
             <p>Laster data...</p>
           ) : selectedDepartments.length === 0 && selectedSections.length === 0 ? (
-            <p>Vennligst velg avdeling og seksjon for å vise statistikk.</p>
+            <p>Vennligst velg en eller flere avdelinger.</p>
           ) : (
             <div>
               <div style={{ height: "calc(100vh - 200px)", maxHeight: "900px" }}>

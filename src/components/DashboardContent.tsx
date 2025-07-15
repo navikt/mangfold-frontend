@@ -32,28 +32,32 @@ export default function DashboardContent() {
   return (
     <section className="dashboard-body">
       <Heading level="2" size="medium" spacing>
-        Mangfold og likestilling i Direktoratet
+        Mangfold og likestilling i Arbeids- og velferdsdirektoratet
       </Heading>
 
       <BodyShort spacing>
-        Nav har en forpliktelse til å jobbe for mangfold og likestilling for ansatte i etaten. Denne nettsiden er tiltenkt som et verktøy for å
-        spre bevissthet om mangfoldet for hele organisasjonen og samtidig gi innsikt til videre arbeid med inkludering og representasjon.
+        Nav har en forpliktelse til å jobbe for mangfold og likestilling for ansatte i etaten. Dette dashboardet er tiltenkt som et verktøy for å
+        spre bevissthet om mangfoldet innad i direktoratet og samtidig gi innsikt til videre arbeid med inkludering og representasjon.
       </BodyShort>
 
       <BodyShort spacing>
-        Her kan du sortere på blant annet kjønn, alder, stillingsgrupper.
+        Visualiseringene og fordelingene er basert på den enkeltes ansettelsesforhold.
+      </BodyShort>
+
+      <BodyShort spacing>
+        Her ser du noen utvalgte nøkkelvisninger. Du kan konstruere dine egne visualiseringer under fanen "Utforsk".
       </BodyShort>
 
       <div className="card-container">
         <GenderIconCard
-          title="Kjønnsfordelingen totalt i Direktoratet"
+          title="Kjønnsfordelingen totalt (prosent)"
           female={femalePercentage}
           male={malePercentage}
           mode="prosent"
         />
 
         <GenderIconCard
-          title="Kjønnsfordelingen totalt i antall"
+          title="Kjønnsfordelingen totalt (antall)"
           female={femaleCount}
           male={maleCount}
           mode="antall"
@@ -69,7 +73,7 @@ export default function DashboardContent() {
       >
         <StatistikkPanel />
       </Box>
-{/* 
+      {/* 
       <Box
         padding="6"
         marginBlock="6"
@@ -79,7 +83,7 @@ export default function DashboardContent() {
       >
         <StatistikkExplorer />
       </Box> */}
-        <StatistikkExplorer />
+      <StatistikkExplorer />
 
     </section>
   );

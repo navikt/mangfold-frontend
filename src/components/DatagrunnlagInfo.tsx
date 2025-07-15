@@ -56,7 +56,7 @@ export default function DatagrunnlagInfo() {
             Prosjekt
           </Heading>
           <BodyLong>
-            Denne landingssiden har vært en del av et prosjekt for sommerstudentene i 2025.
+            Dette dashboardet har vært en del av et prosjekt for sommerstudentene i 2025.
           </BodyLong>
 
           <BodyLong>
@@ -82,7 +82,7 @@ export default function DatagrunnlagInfo() {
             Kilder
           </Heading>
           <BodyLong>
-            Dataene er hentet fra Navs HR-system og koblet opp mot data fra teamkatalogen. Det brukes en servicebruker i Navs datavarehus for å hente ut data til BigQuery etter prosessering og aggregering, som presenteres i dashboardet.
+            Dataene er hentet fra Navs HR-system og koblet opp mot data fra Teamkatalogen. Det brukes en servicebruker i Navs datavarehus for å hente ut data til BigQuery etter prosessering og aggregering, som presenteres i dashboardet.
           </BodyLong>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function DatagrunnlagInfo() {
             <li><BodyShort>Kjønn (juridisk kjønn)</BodyShort></li>
             <li><BodyShort>Avdeling og seksjonstilhørighet</BodyShort></li>
             <li><BodyShort>Stillingsnavn og nivå i Navs hierarki</BodyShort></li>
-            <li><BodyShort>Roller og seksjonstilhørighet fra teamkatalogen</BodyShort></li>
+            <li><BodyShort>Roller og seksjonstilhørighet fra Teamkatalogen</BodyShort></li>
           </ul>
           <BodyShort style={{ marginTop: "0.75rem" }}>
             Det finnes to hovedkilder for ulike data:
@@ -110,7 +110,7 @@ export default function DatagrunnlagInfo() {
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
             <li>
               <BodyShort>
-                Ansettelses-data: avdeling, seksjon og stilling. Én person er ansatt ett sted med en type stilling.
+                Ansettelses-data: avdeling, seksjon og stilling. Én person er ansatt ett sted med én type stilling.
               </BodyShort>
             </li>
             <li>
@@ -120,7 +120,7 @@ export default function DatagrunnlagInfo() {
             </li>
           </ul>
           <BodyLong style={{ marginTop: "0.75rem" }}>
-            Data fra personalsystemet er mer komplett og entydig enn data fra teamkatalogen, men reflekterer ikke like godt hvordan folk selv synes de jobber i Nav. Noens stillingstittel sier lite om deres daglige oppgaver, men kan gi innsikt i deres formelle posisjon. Rollen deres, fra teamkatalogen, sier mer om hvordan folk jobber daglig.
+            Data fra personalsystemet er mer komplett og entydig enn data fra Teamkatalogen, men reflekterer ikke like godt hvordan folk selv synes de jobber i Nav. Noens stillingstittel sier lite om deres daglige oppgaver, men kan gi innsikt i deres formelle posisjon. Rollen deres, fra Teamkatalogen, sier mer om hvordan folk jobber daglig.
           </BodyLong>
         </div>
       </div>
@@ -133,8 +133,9 @@ export default function DatagrunnlagInfo() {
           <Heading level="4" size="xsmall" spacing>
             Merknader om dataen som vises
           </Heading>
-          <BodyLong>  
-            Seksjon kalles "område" i teamkatalogen av historiske grunner, men skal etter 2025 representere seksjon i organisasjonskartet.
+
+          <BodyLong>
+            Seksjon kalles "område" i Teamkatalogen av historiske grunner, men skal etter 2025 representere seksjon i organisasjonskartet.
           </BodyLong>
 
           <BodyLong>
@@ -167,11 +168,11 @@ export default function DatagrunnlagInfo() {
           </BodyLong>
 
           <BodyLong>
-            Total-grupperinger med færre enn 5 personer er ikke vist da disse gir dårlig statistisk grunnlag, og også av personvernshensyn for individer. Totalgrupperingen tar hensyn til seksjoner og stillinger, og det <strong>kan</strong> altså vises data i de tilfeller der en liten gruppe tilhører en større total, siden det ikke finnes en åpenbar knytning tilbake til individer. Nav har en lovlig forpliktelse å jobbe for mangfold og likestilling for ansatte i etaten, og det er derfor gjort en oppveiing av personvernhensyn mot verdien av å tilgjengilgjøre statistikken internt.
+            Total-grupperinger med færre enn 5 personer er ikke vist da disse gir dårlig statistisk grunnlag, samt av personvernshensyn for individer. Totalgrupperingen tar hensyn til seksjoner og stillinger, og det <strong>kan</strong> altså vises data i de tilfeller der en liten gruppe tilhører en større total, siden det ikke finnes en åpenbar knytning tilbake til individer.
           </BodyLong>
 
           <BodyLong>
-            Python og Airflow (gjennom plattformen KNADA) benyttes for daglig oppdatering og prosessering.
+            Nav har en lovlig forpliktelse å jobbe for mangfold og likestilling for ansatte i etaten, og det er derfor gjort en oppveiing av personvernhensyn mot verdien av å tilgjengilgjøre statistikken internt.
           </BodyLong>
         </div>
       </div>
@@ -187,44 +188,23 @@ export default function DatagrunnlagInfo() {
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
             <li><BodyShort>Dataen viser bare nåværende ansatte i direktoratet. Når man slutter i direktoratet, blir man fjernet fra vårt uttrekk av data.</BodyShort></li>
             <li><BodyShort>Eksterne eller kommunale ansatte er ikke inkludert, slik som konsulenter.</BodyShort></li>
-            <li><BodyShort>Seksjonstilhørighet kan komme fra enten HR-systemet eller teamkatalogen.</BodyShort></li>
-            <li><BodyShort>Personer med flere roller eller seksjonstilhørigheter blir telt flere ganger for hver relevante kategori. Grafer med teamkatalog-tilknytning representerer altså ikke rent antall personer som finnes i direktoratet.</BodyShort></li>
+            <li><BodyShort>Seksjonstilhørighet kan komme fra enten HR-systemet eller Teamkatalogen.</BodyShort></li>
+            <li><BodyShort>Personer med flere roller eller seksjonstilhørigheter blir telt flere ganger for hver relevante kategori. Grafer med Teamkatalog-tilknytning representerer altså ikke rent antall personer som finnes i direktoratet.</BodyShort></li>
             <li><BodyShort>Grafer med data fra personalsystemet skal i motsetning svare til reelle personaltall.</BodyShort></li>
             <li><BodyShort>Totalgrupperinger (i praksis seksjoner eller stillingsgrupper) som er for små kan ikke vises da datagrunnlaget ikke er godt nok.</BodyShort></li>
             <li><BodyShort>"Ukjent", eller en deskriptiv variant, brukes som verdi når informasjon mangler i kildesystemene.</BodyShort></li>
           </ul>
 
-          <BodyLong>  
-            Merk at detaljer i hvordan (og hvilke) personer man teller opp har mye å si for resultatet, og det er usannsynlig at tellinger fra andre steder (slik som teamkatalogen) svarer nøyaktig til antall man finner frem til i dette dashboardet.
+          <BodyLong>
+            Merk at detaljer i hvordan (og hvilke) personer man teller opp har mye å si for resultatet, og det er usannsynlig at tellinger fra andre steder (slik som Teamkatalogen) svarer nøyaktig til antall man finner frem til i dette dashboardet.
             Husk at bare denne siden bare dekker personer som er statlige ansatte, slik at alle tellinger som inkluderer konsulenter ikke samsvarer.
           </BodyLong>
           <BodyLong>
-            En annen faktor som kan ha utslag på tellinger, er at i NOM og Teamkatalogen er ledere for en avdeling ført opp som medlem av en fiktiv seksjon med samme navn som avdelingen. Disse fiktive "seksjonene" er filtrert ut i grafer som omhandler seksjoner. Men ledere er inkludert i tellinger på avdelingsnivå, og svarer da til et par ekstra personer i de ulike avdelingene sammenlignet med en ren sum av personer per seksjon.
+            En annen faktor som kan ha utslag på tellinger, er at i NOM og Teamkatalogen er ledere for en avdeling ført opp som medlem av en fiktiv seksjon med samme navn som avdelingen, disse fiktive "seksjonene" er filtrert ut i grafer som omhandler seksjoner, men ledere er inkludert i tellinger på avdelingsnivå. Da vil dette samsvare til et par ekstra personer i de ulike avdelingene sammenlignet med en ren sum av personer per seksjon.
           </BodyLong>
         </div>
       </div>
 
-      <div style={sectionStyle}>
-        <div style={iconWrapperStyle}>
-          <ClockIcon aria-hidden fontSize="1.75rem" />
-        </div>
-        <div>
-          <Heading level="4" size="xsmall" spacing>
-            Oppdatering
-          </Heading>
-          <BodyLong>
-            {lastUpdated 
-              ? (
-                  <>
-                  Dataene ble sist oppdatert: <strong>{lastUpdated}</strong>.
-
-                  Daglig oppdatering skjer gjennom automatiserte skript (Python via KNADA).
-                  </>
-                )
-              : "Venter på data om oppdateringsinformasjon..."}
-          </BodyLong>
-        </div>
-      </div>
 
       <div style={sectionStyle}>
         <div style={iconWrapperStyle}>
@@ -237,13 +217,37 @@ export default function DatagrunnlagInfo() {
           <ul style={{ paddingLeft: "1.2rem", marginTop: "0.5rem" }}>
             <li><BodyShort>Data ETL-prosess kjøres via Python på KNADA-platformen.</BodyShort></li>
             <li><BodyShort>Data lagres i Google BigQuery.</BodyShort></li>
-            <li><BodyShort>Denne nettsiden kjøres på nais-platformen, og bruker React til frontend og Kotlin til backend.</BodyShort></li>
+            <li><BodyShort>Denne nettsiden kjøres på nais-platformen, og bruker React og Kotlin.</BodyShort></li>
             {
-            // burde kanskje ha linker til github repositories her? 
+              // burde kanskje ha linker til github repositories her? 
             }
           </ul>
         </div>
       </div>
+
+      <div style={sectionStyle}>
+        <div style={iconWrapperStyle}>
+          <ClockIcon aria-hidden fontSize="1.75rem" />
+        </div>
+        <div>
+          <Heading level="4" size="xsmall" spacing>
+            Oppdatering
+          </Heading>
+          <BodyLong>
+            {lastUpdated
+              ? (
+                <>
+                  Dataene ble sist oppdatert: <strong>{lastUpdated}</strong>.
+
+                  Daglig oppdatering skjer gjennom automatiserte skript (Python via KNADA).
+                </>
+              )
+              : "Venter på data om oppdateringsinformasjon..."}
+          </BodyLong>
+        </div>
+      </div>
+
+
 
       <div style={sectionStyle}>
         <div style={iconWrapperStyle}>
@@ -268,6 +272,5 @@ export default function DatagrunnlagInfo() {
         </div>
       </div>
 
-    </div>
-  );
+    </div>)
 }

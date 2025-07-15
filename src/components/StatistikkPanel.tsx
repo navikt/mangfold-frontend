@@ -93,22 +93,22 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
 
 async function fetchWithTimeout(url: string, timeout = 15000, retries = 3) {
   let attempt = 0;
-  
+
   while (attempt < retries) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
-      
+
       const response = await fetch(url, {
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         throw new Error("Kunne ikke hente data");
       }
-      
+
       return await response.json();
     } catch (error) {
       attempt++;
@@ -133,7 +133,7 @@ export default function StatistikkPanel() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const data = await fetchWithTimeout(
           "https://mangfold-backend.intern.nav.no/kjonn-per-avdeling",
           15000  // 15 sekunder timeout
@@ -180,18 +180,16 @@ export default function StatistikkPanel() {
       <Heading level="3" size="small" spacing>
         Oversikt over kvinner og menn i hver avdeling – {yearRange[0]}
       </Heading>
-      
+
       <p>
         Her kan du se kjønnsfordelingen i hver avdeling basert på data fra inneværende år. Oversikten viser hvor mange kvinner
-        og menn som jobber i hver avdeling – både som prosentandel og i antall personer. Dette gir et tydelig bilde av hvordan
-        kjønnsbalansen fordeler seg på tvers av virksomheten akkurat nå, og kan brukes som grunnlag for videre arbeid med
-        likestilling og mangfold.
+        og menn som jobber i hver avdeling. Hold musen over en avdeling for å se detaljer om kjønnsfordelingen.
       </p>
 
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'flex-end', 
-        marginBottom: '1rem' 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: '1rem'
       }}>
         <Button variant="secondary" onClick={() => setShowTable((prev) => !prev)}>
           {showTable ? "Vis som figur" : "Vis som tabell"}
@@ -199,19 +197,19 @@ export default function StatistikkPanel() {
       </div>
 
       <div style={{ position: 'relative' }}>
-        <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          display: 'flex', 
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
           justifyContent: 'center',
           zIndex: 1
         }}>
           {!showTable && (
-            <div style={{ 
-              display: "flex", 
-              gap: "1.5rem", 
+            <div style={{
+              display: "flex",
+              gap: "1.5rem",
               alignItems: "center",
               background: 'white',
               padding: '4px 12px',

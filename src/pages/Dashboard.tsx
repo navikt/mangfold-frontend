@@ -7,7 +7,7 @@ import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
 // import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<"hoved" | "kategori" | "data">("hoved");
+  const [activeTab, setActiveTab] = useState<"hoved" | "Utforsk" | "data">("hoved");
   const { lastUpdated } = useMetaData();
 
   const navLinkStyle = (tab: string) => ({
@@ -39,8 +39,8 @@ export default function Dashboard() {
           <span onClick={() => setActiveTab("hoved")} style={navLinkStyle("hoved")}>
             Hovedoversikt
           </span>
-          <span onClick={() => setActiveTab("kategori")} style={navLinkStyle("kategori")}>
-            Kategorier
+          <span onClick={() => setActiveTab("Utforsk")} style={navLinkStyle("Utforsk")}>
+            Utforsk
           </span>
           <span onClick={() => setActiveTab("data")} style={navLinkStyle("data")}>
             Om data
@@ -76,7 +76,7 @@ export default function Dashboard() {
       {/* Innholdet */}
       <div style={{ padding: "2rem" }}>
         {activeTab === "hoved" && <DashboardContent />}
-        {activeTab === "kategori" && <StatistikkExplorerTab />}
+        {activeTab === "Utforsk" && <StatistikkExplorerTab />}
         {activeTab === "data" && <DatagrunnlagInfo />}
         {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
         {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
