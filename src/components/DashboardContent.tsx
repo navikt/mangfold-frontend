@@ -5,6 +5,7 @@ import StatistikkPanel from "./StatistikkPanel";
 import StatistikkExplorer from "./StatistikkExplorer";
 import "../css/DashboardContent.css"
 import { useEffect, useState } from "react";
+import { Box } from "@navikt/ds-react";
 
 type KjønnStatistikk = {
   kjonn: "kvinne" | "mann";
@@ -58,9 +59,28 @@ export default function DashboardContent() {
           mode="antall"
         />
       </div>
-      <StatistikkPanel />
 
-      <StatistikkExplorer />
+      <Box
+        padding="6"
+        marginBlock="6"
+        borderRadius="large"
+        background-color="subtle"
+        shadow="medium"
+      >
+        <StatistikkPanel />
+      </Box>
+{/* 
+      <Box
+        padding="6"
+        marginBlock="6"
+        borderRadius="large"
+        background-color="subtle"
+        shadow="medium"
+      >
+        <StatistikkExplorer />
+      </Box> */}
+        <StatistikkExplorer />
+
     </section>
   );
 }
