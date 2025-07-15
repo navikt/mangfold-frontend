@@ -16,6 +16,8 @@ import {
 import * as tokens from "@navikt/ds-tokens/dist/tokens";
 import { GuidePanel } from "@navikt/ds-react";
 
+const MIN_ANTALL_FOR_VISNING = 5;
+
 const CustomTooltip = ({
   active,
   payload,
@@ -25,9 +27,18 @@ const CustomTooltip = ({
   payload?: any;
   shouldShowCountAxis: boolean;
 }) => {
-
   if (active && payload && payload.length) {
+    const isMasked = payload[0]?.payload?.isMasked ?? false;
+    const maskedCombos = payload[0]?.payload?.maskedCombos ?? new Set();
     const total = payload[0]?.payload?.totalAntall ?? 0;
+
+    if (isMasked) {
+      return (
+        <div style={{ background: "white", border: "1px solid #ccc", padding: "0.5rem" }}>
+          <strong>For få personer til å vise data</strong>
+        </div>
+      );
+    }
 
     return (
       <div style={{ background: "white", border: "1px solid #ccc", padding: "0.5rem" }}>
@@ -36,8 +47,15 @@ const CustomTooltip = ({
           const antall = shouldShowCountAxis
             ? entry.value
             : Math.round((prosent / 100) * total);
-
           const erTotalt = entry.name === "Totalt" || prosent === 100;
+
+          if (maskedCombos.has(entry.name)) {
+            return (
+              <div key={`item-${index}`} style={{ color: entry.color }}>
+                <strong>{entry.name}</strong>: For få personer til å vise data
+              </div>
+            );
+          }
 
           return (
             <div key={`item-${index}`} style={{ color: entry.color }}>
@@ -48,9 +66,7 @@ const CustomTooltip = ({
                   : `${prosent.toFixed(1)}% (${total} personer)`
                 : shouldShowCountAxis
                   ? `${antall} personer`
-                  : antall < 5
-                    ? "For få personer til å vise data"
-                    : `${prosent.toFixed(1)}% (${antall} personer)`}
+                  : `${prosent.toFixed(1)}% (${antall} personer)`}
             </div>
           );
         })}
@@ -59,7 +75,6 @@ const CustomTooltip = ({
   }
   return null;
 };
-
 
 export default function StatistikkExplorerTab() {
   const [rawData, setRawData] = useState<any[]>([]);
@@ -113,8 +128,6 @@ export default function StatistikkExplorerTab() {
     selectedLederniva.length === 0 &&
     selectedStilling.length === 0;
 
-
-
   const filterValidSelections = (selected: string[], available: string[]) =>
     selected.filter((val) => available.includes(val));
 
@@ -158,7 +171,6 @@ export default function StatistikkExplorerTab() {
     setSelectedStilling((prev) => filterValidSelections(prev, validStilling));
   }, [selectedDepartments, rawData]);
 
-
   const addSelectAll = (options: string[]) => ["(Alle)", ...options];
   const handleToggle = (val: string, selected: string[], setSelected: (val: string[]) => void, all: string[]) => {
     if (val === "(Alle)") {
@@ -168,6 +180,7 @@ export default function StatistikkExplorerTab() {
     }
   };
 
+  // ---- MASKERING OG RENORMALISERING ----
   const filteredData = useMemo(() => {
     if (selectedDepartments.length === 0) return [];
 
@@ -197,6 +210,8 @@ export default function StatistikkExplorerTab() {
     const map: Record<string, Record<string, number>> = {};
     const grupper = new Set<string>();
     const undergrupper = new Set<string>();
+    const isMaskedGroups: Record<string, boolean> = {};
+    const maskedCombos: Record<string, Set<string>> = {};
 
     filteredData.forEach((d) => {
       const gruppe = d[groupKey] ?? "Ukjent";
@@ -210,32 +225,55 @@ export default function StatistikkExplorerTab() {
 
       if (!map[gruppe]) map[gruppe] = {};
       map[gruppe][comboKey] = (map[gruppe][comboKey] || 0) + (d.antall ?? 0);
-
       grupper.add(gruppe);
       undergrupper.add(comboKey);
     });
 
+    // Maskér hele gruppen hvis totalen < MIN_ANTALL_FOR_VISNING
+    Object.entries(map).forEach(([gruppe, groupMap]) => {
+      const totalAntall = Object.values(groupMap).reduce((sum, antall) => sum + antall, 0);
+      if (totalAntall > 0 && totalAntall < MIN_ANTALL_FOR_VISNING) {
+        Object.keys(groupMap).forEach((comboKey) => {
+          groupMap[comboKey] = 0;
+        });
+        isMaskedGroups[gruppe] = true;
+      } else {
+        isMaskedGroups[gruppe] = false;
+        // Maskér enkeltkombinasjoner med <5 personer
+        Object.entries(groupMap).forEach(([comboKey, antall]) => {
+          if (antall > 0 && antall < MIN_ANTALL_FOR_VISNING) {
+            if (!maskedCombos[gruppe]) maskedCombos[gruppe] = new Set();
+            maskedCombos[gruppe].add(comboKey);
+            groupMap[comboKey] = 0;
+          }
+        });
+      }
+    });
+
     const data = Array.from(grupper).map((g) => {
-      const total = rawData
-        .filter((d) => d[groupKey] === g)
-        .reduce((sum, d) => sum + (d.antall ?? 0), 0);
+      const total = Object.values(map[g] || {}).reduce((sum, v) => sum + v, 0);
       const row: Record<string, any> = {
         gruppe: g,
         totalAntall: total,
+        isMasked: isMaskedGroups[g] || false,
+        maskedCombos: maskedCombos[g] || new Set(),
       };
 
-      // Object.entries(map[g]).forEach(([key, val]) => {
-      //   row[key] = total > 0 ? (val / total) * 100 : 0;
-      // });
+      // RENORMALISERING: Finn summen av synlige undergrupper
+const visibleSum = Object.entries(map[g])
+  .filter(([k]) => !(row.isMasked || row.maskedCombos.has(k)))
+  .reduce((sum, [, v]) => sum + v, 0);
 
       Object.entries(map[g]).forEach(([key, val]) => {
-        if (shouldShowCountAxis) {
-          row[key] = val; // vis antall
+        if (row.isMasked || row.maskedCombos.has(key)) {
+          row[key] = 0;
+        } else if (shouldShowCountAxis) {
+          row[key] = val;
         } else {
-          row[key] = total > 0 ? (val / total) * 100 : 0; // vis prosent
+          // Re-normaliser prosent så synlige undergrupper alltid summerer til 100%
+          row[key] = visibleSum > 0 ? (val / visibleSum) * 100 : 0;
         }
       });
-
       return row;
     });
 
@@ -243,9 +281,9 @@ export default function StatistikkExplorerTab() {
       data,
       undergrupper: Array.from(undergrupper),
     };
-  }, [filteredData, groupKey, selectedKjonn, selectedAlder, selectedAnsiennitet, selectedLederniva, selectedStilling]);
+  }, [filteredData, groupKey, selectedKjonn, selectedAlder, selectedAnsiennitet, selectedLederniva, selectedStilling, rawData, shouldShowCountAxis]);
 
-
+  // Fargelogikk
   const fargeMap = useMemo(() => {
     const baseColors = {
       Kvinne: [tokens.ABlue700, tokens.ABlue500, tokens.ABlue300],
@@ -644,18 +682,15 @@ export default function StatistikkExplorerTab() {
                             : remToPx(tokens.AFontSizeMedium),
                         fill: tokens.ATextDefault,
                       }}
-                      domain={[0, 'auto']}
+                      domain={shouldShowCountAxis ? [0, 'auto'] : [0, 100]} // Prosent skal ikke gå over 100!
                       tickFormatter={(value: any) =>
                         shouldShowCountAxis
-                          ? `${Math.round(value)}` // <-- alltid string!
+                          ? `${Math.round(value)}`
                           : `${Math.round(value)}%`
                       }
-
                     />
 
                     <Tooltip content={(props) => <CustomTooltip {...props} shouldShowCountAxis={shouldShowCountAxis} />} />
-
-
 
                     {chartData.undergrupper.map((key) => (
                       <Bar
@@ -672,7 +707,6 @@ export default function StatistikkExplorerTab() {
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
-
               </div>
 
               <div
@@ -684,7 +718,6 @@ export default function StatistikkExplorerTab() {
                   justifyContent: "center",
                 }}
               >
-
                 <div
                   style={{
                     display: "grid",
