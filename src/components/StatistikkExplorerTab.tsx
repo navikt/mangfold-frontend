@@ -14,49 +14,36 @@ import { CustomizedAxisTick } from "./CustomizedAxisTick";
 
 const MIN_ANTALL_FOR_VISNING = 5;
 
-// Lager alle mulige kombinasjoner av filterverdier (kartesisk produkt)
-function cartesian(arrays: string[][]): string[][] {
-  return arrays.reduce((a, b) => a.flatMap((d) => b.map((e) => [...d, e])), [
-    [],
-  ] as string[][]);
-}
-
-// Tooltip-komponent for grafen, viser kun synlige grupper i grafen (de med farge/beløp > 0 og ikke maskert)
+// Tooltip for grafen, viser alle undergrupper, både synlige og maskerte (slik som legend)
 const CustomTooltip = ({
   active,
   payload,
   shouldShowCountAxis,
-  fargeMap,
+  legendGroups,
+  row,
+  getFarge,
 }: {
   active?: boolean;
   payload?: any;
   shouldShowCountAxis: boolean;
-  fargeMap: Record<string, string>;
+  legendGroups: string[];
+  row: any;
+  getFarge: (entry: string, antall: number) => string;
 }) => {
   if (active && payload && payload.length) {
-    const isMasked = payload[0]?.payload?.isMasked ?? false;
-    const maskedCombos = payload[0]?.payload?.maskedCombos ?? new Set();
-    const total = payload[0]?.payload?.totalAntall ?? 0;
-    const allKeys: string[] =
-      payload[0]?.payload?.allComboKeys ??
-      Object.keys(payload[0]?.payload).filter(
-        (k) =>
-          k !== "gruppe" &&
-          k !== "totalAntall" &&
-          k !== "isMasked" &&
-          k !== "maskedCombos" &&
-          k !== "allComboKeys"
-      );
-    if (isMasked) {
+    const totalAntall = row.totalAntall ?? 0;
+    // Hvis hele gruppen (seksjon/avdeling) har for få personer, vis kun grå tekst
+    if (totalAntall < MIN_ANTALL_FOR_VISNING) {
       return (
         <div
           style={{
             background: "white",
             border: "1px solid #ccc",
             padding: "0.5rem",
+            color: "#888",
           }}
         >
-          <strong>For få personer til å vise data</strong>
+          <strong>For få personer til å vise data for denne gruppen</strong>
         </div>
       );
     }
@@ -68,26 +55,27 @@ const CustomTooltip = ({
           padding: "0.5rem",
         }}
       >
-        {allKeys.map((entry: string, index: number) => {
-          const value = payload[0]?.payload[entry];
-          const isMaskedCombo =
-            maskedCombos.has(entry) ||
-            value === 0 ||
-            value === undefined ||
-            value < MIN_ANTALL_FOR_VISNING;
-          const color = isMaskedCombo ? "#888" : fargeMap?.[entry] ?? "#222";
+        {legendGroups.map((entry: string, index: number) => {
+          const antall = row.rawGroupMap?.[entry] ?? 0;
+          if (antall === 0) return null;
+          if (antall < MIN_ANTALL_FOR_VISNING) {
+            return (
+              <div key={`item-${index}`} style={{ color: "#888" }}>
+                <strong>{entry}</strong>: For få personer til å vise data
+              </div>
+            );
+          }
+          const value = row[entry];
           const prosent = shouldShowCountAxis ? undefined : value;
-          const antall = shouldShowCountAxis
+          const visAntall = shouldShowCountAxis
             ? value
-            : Math.round((value / 100) * total);
+            : Math.round((value / 100) * totalAntall);
           return (
-            <div key={`item-${index}`} style={{ color }}>
+            <div key={`item-${index}`} style={{ color: getFarge(entry, antall) }}>
               <strong>{entry}</strong>:{" "}
-              {isMaskedCombo
-                ? "For få personer til å vise data"
-                : shouldShowCountAxis
-                ? `${antall} personer`
-                : `${prosent?.toFixed(1)}% (${antall} personer)`}
+              {shouldShowCountAxis
+                ? `${visAntall} personer`
+                : `${prosent?.toFixed(1)}% (${visAntall} personer)`}
             </div>
           );
         })}
@@ -145,7 +133,7 @@ export default function StatistikkExplorerTab() {
     [rawData]
   );
 
-  // Seksjonene per avdeling (kun ekte seksjoner, ikke ledere)
+  // Seksjonene per avdeling
   const sectionOptionsByDepartment = useMemo(() => {
     const avdelinger = new Set(distinct(rawData.map((d) => d.avdeling)));
     const map: Record<string, string[]> = {};
@@ -165,7 +153,7 @@ export default function StatistikkExplorerTab() {
     return map;
   }, [rawData]);
 
-  // Bestemmer om Y-aksen skal vise antall eller prosent (ingen filter = antall)
+  // Skal Y-aksen vise antall eller prosent
   const shouldShowCountAxis =
     selectedKjonn.length === 0 &&
     selectedAlder.length === 0 &&
@@ -177,12 +165,10 @@ export default function StatistikkExplorerTab() {
   const filterValidSelections = (selected: string[], available: string[]) =>
     selected.filter((val) => available.includes(val));
 
-  // Nullstill seksjonsvalg når avdeling endres
   useEffect(() => {
     setSelectedSections([]);
   }, [selectedDepartments]);
 
-  // Oppdaterer alle filtervalg når avdeling endres
   useEffect(() => {
     if (selectedDepartments.length === 0) {
       setSelectedSections([]);
@@ -266,139 +252,122 @@ export default function StatistikkExplorerTab() {
   // Bestemmer om vi grupperer på avdeling eller seksjon
   const groupKey = selectedSections.length > 0 ? "seksjon" : "avdeling";
 
-  // Filtrerer data basert på valgt avdeling/seksjon og filter
+  // Filtrerer data basert på valgt avdeling/seksjon og ALLE AKTIVE filter
   const filteredData = useMemo(() => {
     if (selectedDepartments.length === 0) return [];
     const avdelinger = new Set(distinct(rawData.map((d) => d.avdeling)));
     return rawData.filter((d) => {
-      // AVDELINGSVISNING: alle ansatte for valgt avdeling
-      if (groupKey === "avdeling") {
-        return selectedDepartments.includes(d.avdeling);
-      }
-      // SEKSJONSVISNING: kun ansatte i ekte seksjoner
-      if (groupKey === "seksjon") {
-        const isNotLeder =
-          d.seksjon && d.seksjon !== d.avdeling && !avdelinger.has(d.seksjon);
-        const isInSelectedSeksjon =
-          selectedSections.length === 0 || selectedSections.includes(d.seksjon);
-        return (
-          isNotLeder &&
-          isInSelectedSeksjon &&
-          selectedDepartments.includes(d.avdeling)
-        );
-      }
-      return false;
+      const validAvdeling = selectedDepartments.includes(d.avdeling);
+      const validSeksjon = groupKey === "seksjon"
+        ? selectedSections.length === 0 || selectedSections.includes(d.seksjon)
+        : true;
+      const isNotLeder = groupKey === "seksjon"
+        ? d.seksjon && d.seksjon !== d.avdeling && !avdelinger.has(d.seksjon)
+        : true;
+      const validKjonn = selectedKjonn.length === 0 || selectedKjonn.includes(d.kjonn);
+      const validAlder = selectedAlder.length === 0 || selectedAlder.includes(d.aldersgruppe);
+      const validAnsiennitet = selectedAnsiennitet.length === 0 || selectedAnsiennitet.includes(d.ansiennitetsgruppe);
+      const validLederniva = selectedLederniva.length === 0 || selectedLederniva.includes(d.lederniva);
+      const validStilling = selectedStilling.length === 0 || selectedStilling.includes(d.stillingsnavn);
+      return validAvdeling && validSeksjon && isNotLeder &&
+        validKjonn && validAlder && validAnsiennitet && validLederniva && validStilling;
     });
-  }, [rawData, selectedDepartments, selectedSections, groupKey]);
+  }, [
+    rawData,
+    selectedDepartments,
+    selectedSections,
+    groupKey,
+    selectedKjonn,
+    selectedAlder,
+    selectedAnsiennitet,
+    selectedLederniva,
+    selectedStilling,
+  ]);
 
-  // --- CHARTDATA: grupper, maskering, renormalisering og farger ---
+  // CHARTDATA: Alle grupper synlige på x-aksen, men kun >=5 personer får graf/bar.
+  // Undergrupper med <5 skjules fra bar/graf, men vises i legend og tooltip i grått.
   const chartData = useMemo(() => {
-    // 1. Lag alle mulige filterkombinasjoner
-    const filterArrays: string[][] = [];
-    if (selectedKjonn.length > 0) filterArrays.push(selectedKjonn);
-    if (selectedAlder.length > 0) filterArrays.push(selectedAlder);
-    if (selectedAnsiennitet.length > 0) filterArrays.push(selectedAnsiennitet);
-    if (selectedLederniva.length > 0) filterArrays.push(selectedLederniva);
-    if (selectedStilling.length > 0) filterArrays.push(selectedStilling);
+    let grupper: string[] = [];
+    if (groupKey === "seksjon" && selectedSections.length > 0) {
+      grupper = selectedSections;
+    } else if (groupKey === "avdeling" && selectedDepartments.length > 0) {
+      grupper = selectedDepartments;
+    } else {
+      grupper = Array.from(new Set(filteredData.map((d) => d[groupKey] ?? "Ukjent")));
+    }
 
-    const cartesianCombos: string[] =
-      filterArrays.length > 0
-        ? cartesian(filterArrays).map((parts) => parts.join(" | "))
-        : ["Totalt"];
-
-    // 2. Finn alle grupper (avdeling/seksjon)
-    const grupper = new Set<string>();
-    filteredData.forEach((d) => {
-      grupper.add(d[groupKey] ?? "Ukjent");
-    });
-
-    // 3. Bygg map: gruppe -> comboKey -> antall
+    // Map: gruppe -> comboKey -> antall
     const map: Record<string, Record<string, number>> = {};
     filteredData.forEach((d) => {
       const gruppe = d[groupKey] ?? "Ukjent";
       const keyParts: string[] = [];
       if (selectedKjonn.length > 0) keyParts.push(d.kjonn || "Ukjent");
       if (selectedAlder.length > 0) keyParts.push(d.aldersgruppe || "Ukjent");
-      if (selectedAnsiennitet.length > 0)
-        keyParts.push(d.ansiennitetsgruppe || "Ukjent");
+      if (selectedAnsiennitet.length > 0) keyParts.push(d.ansiennitetsgruppe || "Ukjent");
       if (selectedLederniva.length > 0) keyParts.push(d.lederniva || "Ukjent");
-      if (selectedStilling.length > 0)
-        keyParts.push(d.stillingsnavn || "Ukjent");
+      if (selectedStilling.length > 0) keyParts.push(d.stillingsnavn || "Ukjent");
       const comboKey = keyParts.length > 0 ? keyParts.join(" | ") : "Totalt";
       if (!map[gruppe]) map[gruppe] = {};
       map[gruppe][comboKey] = (map[gruppe][comboKey] || 0) + (d.antall ?? 0);
     });
 
-    // 4. Sikre at alle kombinasjoner finnes i alle grupper
-    Array.from(grupper).forEach((gruppe) => {
-      if (!map[gruppe]) map[gruppe] = {};
-      cartesianCombos.forEach((comboKey) => {
-        if (!(comboKey in map[gruppe])) {
-          map[gruppe][comboKey] = 0;
-        }
+    // Finn alle undergrupper for legend og tooltip (også de <5 personer)
+    const undergrupperSet = new Set<string>();
+    Object.values(map).forEach((groupMap) => {
+      Object.keys(groupMap).forEach((comboKey) => {
+        undergrupperSet.add(comboKey);
       });
     });
+    const undergrupper = Array.from(undergrupperSet);
 
-    // 5. Maskering: skjul små grupper av personvernhensyn
-    const isMaskedGroups: Record<string, boolean> = {};
-    const maskedCombos: Record<string, Set<string>> = {};
+    const data = grupper.map((g) => {
+      const groupMap = map[g] || {};
+      // Synlige barer (>=5 personer)
+      const visibleCombos = undergrupper.filter((key) => (groupMap[key] || 0) >= MIN_ANTALL_FOR_VISNING);
+      // Maskerte barer (0 < x < 5 personer)
+      const maskedCombos = undergrupper.filter((key) => (groupMap[key] || 0) > 0 && (groupMap[key] || 0) < MIN_ANTALL_FOR_VISNING);
+      const totalVisible = visibleCombos.reduce((sum, key) => sum + (groupMap[key] || 0), 0);
 
-    Object.entries(map).forEach(([gruppe, groupMap]) => {
-      const totalAntall = Object.values(groupMap).reduce(
-        (sum, antall) => sum + antall,
-        0
-      );
-      if (totalAntall > 0 && totalAntall < MIN_ANTALL_FOR_VISNING) {
-        Object.keys(groupMap).forEach((comboKey) => {
-          groupMap[comboKey] = 0;
-        });
-        isMaskedGroups[gruppe] = true;
-      } else {
-        isMaskedGroups[gruppe] = false;
-        Object.entries(groupMap).forEach(([comboKey, antall]) => {
-          if (antall > 0 && antall < MIN_ANTALL_FOR_VISNING) {
-            if (!maskedCombos[gruppe]) maskedCombos[gruppe] = new Set();
-            maskedCombos[gruppe].add(comboKey);
-            groupMap[comboKey] = 0;
-          }
-        });
-      }
-    });
+      const isMasked = totalVisible < MIN_ANTALL_FOR_VISNING;
 
-    // 6. Renormalisering: prosentfordeling på synlige grupper
-    const data = Array.from(grupper).map((g) => {
-      const total = Object.values(map[g] || {}).reduce((sum, v) => sum + v, 0);
       const row: Record<string, any> = {
         gruppe: g,
-        totalAntall: total,
-        isMasked: isMaskedGroups[g] || false,
-        maskedCombos: maskedCombos[g] || new Set(),
-        allComboKeys: cartesianCombos,
+        totalAntall: totalVisible,
+        isMasked,
+        comboKeysWithData: undergrupper, // Tooltip og legend skal vise alle!
+        rawGroupMap: groupMap,
       };
-      const visibleSum = cartesianCombos
-        .filter((key) => !(row.isMasked || row.maskedCombos.has(key)))
-        .reduce((sum, key) => sum + (map[g][key] || 0), 0);
 
-      cartesianCombos.forEach((key) => {
-        if (row.isMasked || row.maskedCombos.has(key)) {
-          row[key] = 0;
-        } else if (shouldShowCountAxis) {
-          row[key] = map[g][key] || 0;
-        } else {
-          row[key] = visibleSum > 0 ? (map[g][key] / visibleSum) * 100 : 0;
-        }
+      visibleCombos.forEach((key) => {
+        const antall = groupMap[key] || 0;
+        row[key] = shouldShowCountAxis
+          ? antall
+          : totalVisible > 0
+          ? (antall / totalVisible) * 100
+          : 0;
       });
+
+      // Maskerte combos har ingen bar/tall, men vises i tooltip/legend i grått
+      maskedCombos.forEach((key) => {
+        row[key] = undefined;
+      });
+
       return row;
     });
 
+    const allGroupsMasked = data.every((row) => row.isMasked);
+
     return {
       data,
-      undergrupper: cartesianCombos,
-      maskedCombos,
+      undergrupper,
+      allGroupsMasked,
+      map,
     };
   }, [
     filteredData,
     groupKey,
+    selectedDepartments,
+    selectedSections,
     selectedKjonn,
     selectedAlder,
     selectedAnsiennitet,
@@ -407,9 +376,9 @@ export default function StatistikkExplorerTab() {
     shouldShowCountAxis,
   ]);
 
-  // --- FARGER FOR GRAFEN ---
-  const fargeMap = useMemo(() => {
-    // Fargepaletter for ulike grupper
+  // FARGER FOR GRAFEN
+  const getFarge = (entry: string, antall: number) => {
+    if (antall > 0 && antall < MIN_ANTALL_FOR_VISNING) return "#888";
     const baseColors = {
       Kvinne: [tokens.ABlue700, tokens.ABlue500, tokens.ABlue300],
       Mann: [tokens.ARed700, tokens.ARed500, tokens.ARed300],
@@ -420,7 +389,7 @@ export default function StatistikkExplorerTab() {
       "30-55": "#008080",
       "55+": "#4DB6AC",
     };
-    const ansiennitetFarger: Record<string, string> = {
+    const ansiennitetsFarger: Record<string, string> = {
       "0-2": tokens.AGreen300,
       "2-4": tokens.AGreen500,
       "4-10": tokens.AGreen600,
@@ -443,105 +412,83 @@ export default function StatistikkExplorerTab() {
       tokens.APurple100,
     ];
 
-    // Tildeler farger til hver undergruppe
-    const counters: Record<string, number> = {
-      Kvinne: 0,
-      Mann: 0,
-      Ukjent: 0,
-    };
-    const result: Record<string, string> = {};
-    let stillingColorIndex = 0;
-    const stillingColorMap: Record<string, string> = {};
-
-    chartData.undergrupper.forEach((val) => {
-      if (
-        val.startsWith("Kvinne") ||
-        val.startsWith("Mann") ||
-        val.startsWith("Ukjent")
-      ) {
-        const kjonn = val.startsWith("Kvinne")
-          ? "Kvinne"
-          : val.startsWith("Mann")
-          ? "Mann"
-          : "Ukjent";
-        const index = counters[kjonn] % baseColors[kjonn].length;
-        result[val] = baseColors[kjonn][index];
-        counters[kjonn]++;
-      } else if (selectedKjonn.length === 0 && selectedAlder.length > 0) {
-        const alderKey = Object.keys(alderFarger).find((key) =>
-          val.includes(key)
-        );
-        result[val] = alderFarger[alderKey ?? "<30"];
-      } else if (
-        selectedKjonn.length === 0 &&
-        selectedAlder.length === 0 &&
-        selectedAnsiennitet.length > 0
-      ) {
-        const ansKey = Object.keys(ansiennitetFarger).find((key) =>
-          val.includes(key)
-        );
-        result[val] = ansiennitetFarger[ansKey ?? "0-2"];
-      } else if (
-        selectedKjonn.length === 0 &&
-        selectedAlder.length === 0 &&
-        selectedAnsiennitet.length === 0 &&
-        selectedLederniva.length > 0
-      ) {
-        const ledKey = Object.keys(lederFarger).find((key) =>
-          val.includes(key)
-        );
-        result[val] = lederFarger[ledKey ?? "Medarbeider"];
-      } else if (
-        selectedKjonn.length === 0 &&
-        selectedAlder.length === 0 &&
-        selectedAnsiennitet.length === 0 &&
-        selectedLederniva.length === 0 &&
-        selectedStilling.length > 0
-      ) {
-        const stillingKey = val;
-        if (!stillingColorMap[stillingKey]) {
-          const color =
-            stillingFarger[stillingColorIndex % stillingFarger.length];
-          stillingColorMap[stillingKey] = color;
-          stillingColorIndex++;
-        }
-        result[val] = stillingColorMap[stillingKey];
-      } else {
-        result[val] = "#236B7D";
-      }
-    });
-
-    return result;
-  }, [
-    chartData.undergrupper,
-    selectedKjonn,
-    selectedAlder,
-    selectedAnsiennitet,
-    selectedLederniva,
-    selectedStilling,
-  ]);
+    if (
+      entry.startsWith("Kvinne") ||
+      entry.startsWith("Mann") ||
+      entry.startsWith("Ukjent")
+    ) {
+      const kjonn = entry.startsWith("Kvinne")
+        ? "Kvinne"
+        : entry.startsWith("Mann")
+        ? "Mann"
+        : "Ukjent";
+      return baseColors[kjonn][0];
+    } else if (selectedKjonn.length === 0 && selectedAlder.length > 0) {
+      const alderKey = Object.keys(alderFarger).find((key) =>
+        entry.includes(key)
+      );
+      return alderFarger[alderKey ?? "<30"];
+    } else if (
+      selectedKjonn.length === 0 &&
+      selectedAlder.length === 0 &&
+      selectedAnsiennitet.length > 0
+    ) {
+      const ansKey = Object.keys(ansiennitetsFarger).find((key) =>
+        entry.includes(key)
+      );
+      return ansiennitetsFarger[ansKey ?? "0-2"];
+    } else if (
+      selectedKjonn.length === 0 &&
+      selectedAlder.length === 0 &&
+      selectedAnsiennitet.length === 0 &&
+      selectedLederniva.length > 0
+    ) {
+      const ledKey = Object.keys(lederFarger).find((key) =>
+        entry.includes(key)
+      );
+      return lederFarger[ledKey ?? "Medarbeider"];
+    } else if (
+      selectedKjonn.length === 0 &&
+      selectedAlder.length === 0 &&
+      selectedAnsiennitet.length === 0 &&
+      selectedLederniva.length === 0 &&
+      selectedStilling.length > 0
+    ) {
+      return stillingFarger[0];
+    }
+    return "#236B7D";
+  };
 
   // Hover-state for legende
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const remToPx = (rem: string) => parseFloat(rem) * 16;
 
-  // Legend: vis kun hvis minst én gruppe har synlig data
-  const legendGroups = chartData.undergrupper.filter((key) => key !== "Totalt");
-  const legendBoxStatus: Record<string, "visible" | "masked"> = {};
+  // LEGEND: Vis alle undergrupper i legend, markér maskerte i grått med tekst
+  const legendGroups = chartData.undergrupper;
+  const legendBoxStatus: Record<string, "visible" | "masked" | "empty"> = {};
   legendGroups.forEach((key) => {
     const hasVisible = chartData.data.some(
-      (row) => !row.isMasked && !row.maskedCombos.has(key) && row[key] > 0
+      (row) => row.rawGroupMap?.[key] >= MIN_ANTALL_FOR_VISNING
     );
-    legendBoxStatus[key] = hasVisible ? "visible" : "masked";
+    const isMasked = chartData.data.some(
+      (row) => row.rawGroupMap?.[key] > 0 && row.rawGroupMap?.[key] < MIN_ANTALL_FOR_VISNING
+    );
+    const isEmpty = chartData.data.every(
+      (row) => !(row.rawGroupMap?.[key] ?? 0)
+    );
+    legendBoxStatus[key] = hasVisible
+      ? "visible"
+      : isMasked
+      ? "masked"
+      : isEmpty
+      ? "empty"
+      : "masked";
   });
-  const anyVisible = legendGroups.some(
-    (key) => legendBoxStatus[key] === "visible"
-  );
+  const anyVisible = legendGroups.length > 0 && !chartData.allGroupsMasked;
 
   // --- RENDER ---
   return (
     <div>
-      {/* Informasjonspanel */}
       <div>
         <GuidePanel poster>
           <Heading size="medium">Om denne visningen</Heading>
@@ -567,7 +514,6 @@ export default function StatistikkExplorerTab() {
           </BodyLong>
         </GuidePanel>
       </div>
-      {/* Layout: filterpanel og graf */}
       <div
         style={{
           display: "flex",
@@ -823,7 +769,6 @@ export default function StatistikkExplorerTab() {
             </Button>
           )}
         </div>
-        {/* Graf og legende */}
         <div style={{ flex: 1 }}>
           {loading ? (
             <p>Laster data...</p>
@@ -842,76 +787,97 @@ export default function StatistikkExplorerTab() {
                 <div
                   style={{ height: "calc(100vh - 200px)", maxHeight: "900px" }}
                 >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={chartData.data}
-                      margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
-                    >
-                      <XAxis
-                        dataKey="gruppe"
-                        interval={0}
-                        height={chartData.data.length > 9 ? 100 : 60}
-                        tick={(props) => (
-                          <CustomizedAxisTick
-                            {...props}
-                            visibleTicksCount={chartData.data.length}
-                          />
-                        )}
-                      />
-                      <YAxis
-                        tick={{
-                          fontSize:
-                            chartData.data.length <= 10
-                              ? remToPx(tokens.AFontSizeLarge)
-                              : remToPx(tokens.AFontSizeMedium),
-                          fill: tokens.ATextDefault,
-                        }}
-                        domain={shouldShowCountAxis ? [0, "auto"] : [0, 100]}
-                        tickFormatter={(value: any) =>
-                          shouldShowCountAxis
-                            ? `${Math.round(value)}`
-                            : `${Math.round(value)}%`
-                        }
-                        label={{
-                          value: shouldShowCountAxis ? "Antall" : "Prosent",
-                          angle: -90,
-                          position: "insideLeft",
-                          offset: -8,
-                          style: {
-                            fill: tokens.ATextDefault,
-                            fontSize: remToPx(tokens.AFontSizeMedium),
-                            fontWeight: 800,
-                          },
-                        }}
-                      />
-                      <Tooltip
-                        content={(props) => (
-                          <CustomTooltip
-                            {...props}
-                            shouldShowCountAxis={shouldShowCountAxis}
-                            fargeMap={fargeMap}
-                          />
-                        )}
-                      />
-                      {chartData.undergrupper.map((key) => (
-                        <Bar
-                          key={key}
-                          dataKey={key}
-                          stackId="a"
-                          name={key}
-                          fill={fargeMap[key]}
-                          opacity={
-                            hoveredKey === null || hoveredKey === key ? 1 : 0.2
-                          }
-                          radius={[2, 2, 0, 0]}
-                          stroke="#ffffff"
-                          strokeWidth={2}
+                  {chartData.allGroupsMasked ? (
+                    <div style={{ color: "#888", padding: "2rem 0" }}>
+                      <strong>Kan ikke vise data for denne gruppen</strong>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={chartData.data}
+                        margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
+                      >
+                        <XAxis
+                          dataKey="gruppe"
+                          interval={0}
+                          height={chartData.data.length > 9 ? 100 : 60}
+                          tick={(props) => (
+                            <CustomizedAxisTick
+                              {...props}
+                              visibleTicksCount={chartData.data.length}
+                            />
+                          )}
                         />
-                      ))}
-                    </BarChart>
-                  </ResponsiveContainer>
+                        <YAxis
+                          tick={{
+                            fontSize:
+                              chartData.data.length <= 10
+                                ? remToPx(tokens.AFontSizeLarge)
+                                : remToPx(tokens.AFontSizeMedium),
+                            fill: tokens.ATextDefault,
+                          }}
+                          domain={shouldShowCountAxis ? [0, "auto"] : [0, 100]}
+                          tickFormatter={(value: any) =>
+                            shouldShowCountAxis
+                              ? `${Math.round(value)}`
+                              : `${Math.round(value)}%`
+                          }
+                          label={{
+                            value: shouldShowCountAxis ? "Antall" : "Prosent",
+                            angle: -90,
+                            position: "insideLeft",
+                            offset: -8,
+                            style: {
+                              fill: tokens.ATextDefault,
+                              fontSize: remToPx(tokens.AFontSizeMedium),
+                              fontWeight: 800,
+                            },
+                          }}
+                        />
+                        <Tooltip
+                          content={(props) => {
+                            const row = props?.payload?.[0]?.payload;
+                            return (
+                              <CustomTooltip
+                                {...props}
+                                shouldShowCountAxis={shouldShowCountAxis}
+                                legendGroups={legendGroups}
+                                row={row}
+                                getFarge={getFarge}
+                              />
+                            );
+                          }}
+                        />
+                        {chartData.undergrupper.map((key) => {
+                          // Finn farge for baren basert på første rad med synlig antall
+                          let color = "#cccccc";
+                          for (const row of chartData.data) {
+                            const antall = row.rawGroupMap?.[key] ?? 0;
+                            if (antall >= MIN_ANTALL_FOR_VISNING) {
+                              color = getFarge(key, antall);
+                              break;
+                            }
+                          }
+                          return (
+                            <Bar
+                              key={key}
+                              dataKey={key}
+                              stackId="a"
+                              name={key}
+                              fill={color}
+                              opacity={
+                                hoveredKey === null || hoveredKey === key ? 1 : 0.2
+                              }
+                              radius={[2, 2, 0, 0]}
+                              stroke="#ffffff"
+                              strokeWidth={2}
+                            />
+                          );
+                        })}
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
-                {/* Legende for undergrupper, med hover-effekt og maskeringsinfo */}
                 {anyVisible && (
                   <div
                     style={{
@@ -934,7 +900,10 @@ export default function StatistikkExplorerTab() {
                       }}
                     >
                       {legendGroups.map((key) => {
-                        const isVisible = legendBoxStatus[key] === "visible";
+                        const status = legendBoxStatus[key];
+                        const isVisible = status === "visible";
+                        const isMasked = status === "masked";
+                        const isEmpty = status === "empty";
                         const isHovered = hoveredKey === key;
                         return (
                           <div
@@ -951,13 +920,16 @@ export default function StatistikkExplorerTab() {
                               padding: "2px 4px",
                               transition: "background-color 0.2s ease",
                               opacity: isVisible ? 1 : 0.4,
+                              color: isMasked || isEmpty ? "#888" : undefined,
                             }}
                             onMouseEnter={() => setHoveredKey(key)}
                             onMouseLeave={() => setHoveredKey(null)}
                             title={
-                              isVisible
-                                ? undefined
-                                : "For få personer til å vise data"
+                              isMasked
+                                ? "For få personer til å vise data"
+                                : isEmpty
+                                ? "Ingen personer i denne gruppen"
+                                : undefined
                             }
                           >
                             <div
@@ -965,7 +937,7 @@ export default function StatistikkExplorerTab() {
                                 width: 14,
                                 height: 14,
                                 backgroundColor: isVisible
-                                  ? fargeMap[key]
+                                  ? getFarge(key, MIN_ANTALL_FOR_VISNING)
                                   : "#cccccc",
                                 flexShrink: 0,
                                 border: isHovered
@@ -976,12 +948,18 @@ export default function StatistikkExplorerTab() {
                             <span
                               style={{
                                 fontWeight: isHovered ? "bold" : "normal",
-                                color: isHovered ? "#222" : "inherit",
+                                color: isHovered
+                                  ? "#222"
+                                  : isMasked || isEmpty
+                                  ? "#888"
+                                  : "inherit",
                               }}
                             >
                               {key}
-                              {!isVisible
+                              {isMasked
                                 ? " – For få personer til å vise data"
+                                : isEmpty
+                                ? " – Ingen personer i denne gruppen"
                                 : ""}
                             </span>
                           </div>
