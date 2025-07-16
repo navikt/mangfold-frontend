@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Heading, BodyLong } from "@navikt/ds-react";
+import { Heading, BodyLong, Box } from "@navikt/ds-react";
 import {
   Button,
   Accordion,
@@ -261,9 +261,9 @@ export default function StatistikkExplorerTab() {
       };
 
       // RENORMALISERING: Finn summen av synlige undergrupper
-const visibleSum = Object.entries(map[g])
-  .filter(([k]) => !(row.isMasked || row.maskedCombos.has(k)))
-  .reduce((sum, [, v]) => sum + v, 0);
+      const visibleSum = Object.entries(map[g])
+        .filter(([k]) => !(row.isMasked || row.maskedCombos.has(k)))
+        .reduce((sum, [, v]) => sum + v, 0);
 
       Object.entries(map[g]).forEach(([key, val]) => {
         if (row.isMasked || row.maskedCombos.has(key)) {
@@ -645,117 +645,123 @@ const visibleSum = Object.entries(map[g])
             <p>Vennligst velg en eller flere avdelinger.</p>
           ) : (
             <div>
-              <div style={{ height: "calc(100vh - 200px)", maxHeight: "900px" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData.data}
-                    margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
-                  >
-                    <XAxis
-                      dataKey="gruppe"
-                      interval={0}
-                      height={chartData.data.length > 9 ? 100 : 60}
-                      tick={(props) => (
-                        <CustomizedAxisTick {...props} visibleTicksCount={chartData.data.length} />
-                      )}
-                    />
-
-                    <YAxis
-                      tick={{
-                        fontSize:
-                          chartData.data.length <= 10
-                            ? remToPx(tokens.AFontSizeLarge)
-                            : remToPx(tokens.AFontSizeMedium),
-                        fill: tokens.ATextDefault,
-                      }}
-                      domain={shouldShowCountAxis ? [0, 'auto'] : [0, 100]} // Prosent skal ikke gå over 100!
-                      tickFormatter={(value: any) =>
-                        shouldShowCountAxis
-                          ? `${Math.round(value)}`
-                          : `${Math.round(value)}%`
-                      }
-                    />
-                    <Tooltip content={(props) => <CustomTooltip {...props} shouldShowCountAxis={shouldShowCountAxis} />} />
-
-                    {chartData.undergrupper.map((key) => (
-                      <Bar
-                        key={key}
-                        dataKey={key}
-                        stackId="a"
-                        name={key}
-                        fill={fargeMap[key]}
-                        opacity={hoveredKey === null || hoveredKey === key ? 1 : 0.2}
-                        radius={[2, 2, 0, 0]}
-                        stroke="#ffffff"
-                        strokeWidth={2}
+              <Box padding="6" marginBlock="6" borderRadius="large" background-color="subtle" shadow="medium">
+                <div style={{ height: "calc(100vh - 200px)", maxHeight: "900px" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.data} margin={{ top: 20, right: 20, left: 20, bottom: 80 }}>
+                      <XAxis
+                        dataKey="gruppe"
+                        interval={0}
+                        height={chartData.data.length > 9 ? 100 : 60}
+                        tick={(props) => (
+                          <CustomizedAxisTick {...props} visibleTicksCount={chartData.data.length} />
+                        )}
                       />
-                    ))}
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                      <YAxis
+                        tick={{
+                          fontSize:
+                            chartData.data.length <= 10
+                              ? remToPx(tokens.AFontSizeLarge)
+                              : remToPx(tokens.AFontSizeMedium),
+                          fill: tokens.ATextDefault,
+                        }}
+                        domain={shouldShowCountAxis ? [0, "auto"] : [0, 100]}
+                        tickFormatter={(value: any) =>
+                          shouldShowCountAxis ? `${Math.round(value)}` : `${Math.round(value)}%`
+                        }
+                        label={{
+                          value: shouldShowCountAxis ? "Antall" : "Prosent",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: -8,
+                          style: {
+                            fill: tokens.ATextDefault,
+                            fontSize: remToPx(tokens.AFontSizeMedium),
+                            fontWeight: 800, 
+                          },
+                        }}
+                      />
+                      <Tooltip content={(props) => <CustomTooltip {...props} shouldShowCountAxis={shouldShowCountAxis} />} />
+                      {chartData.undergrupper.map((key) => (
+                        <Bar
+                          key={key}
+                          dataKey={key}
+                          stackId="a"
+                          name={key}
+                          fill={fargeMap[key]}
+                          opacity={hoveredKey === null || hoveredKey === key ? 1 : 0.2}
+                          radius={[2, 2, 0, 0]}
+                          stroke="#ffffff"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
 
-              <div
-                style={{
-                  marginTop: "4rem",
-                  paddingTop: "1rem",
-                  paddingBottom: "2rem",
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, minmax(300px, 1fr))",
-                    gap: "1rem 2rem",
-                    fontSize: "16px",
-                    lineHeight: "1.6",
-                    whiteSpace: "normal",
-                    maxWidth: "1200px",
+                    marginTop: "4rem",
+                    paddingTop: "1rem",
+                    paddingBottom: "2rem",
+                    display: "flex",
+                    justifyContent: "center",
                   }}
                 >
-                  {chartData.undergrupper
-                    .filter((key) => key !== "Totalt")
-                    .map((key) => {
-                      const isHovered = hoveredKey === key;
-                      return (
-                        <div
-                          key={key}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            cursor: "pointer",
-                            backgroundColor: isHovered ? "#f0f0f0" : "transparent",
-                            borderRadius: "4px",
-                            padding: "2px 4px",
-                            transition: "background-color 0.2s ease",
-                          }}
-                          onMouseEnter={() => setHoveredKey(key)}
-                          onMouseLeave={() => setHoveredKey(null)}
-                        >
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, minmax(300px, 1fr))",
+                      gap: "1rem 2rem",
+                      fontSize: "16px",
+                      lineHeight: "1.6",
+                      whiteSpace: "normal",
+                      maxWidth: "1200px",
+                    }}
+                  >
+                    {chartData.undergrupper
+                      .filter((key) => key !== "Totalt")
+                      .map((key) => {
+                        const isHovered = hoveredKey === key;
+                        return (
                           <div
+                            key={key}
                             style={{
-                              width: 14,
-                              height: 14,
-                              backgroundColor: fargeMap[key],
-                              flexShrink: 0,
-                              border: isHovered ? "2px solid black" : "none",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              cursor: "pointer",
+                              backgroundColor: isHovered ? "#f0f0f0" : "transparent",
+                              borderRadius: "4px",
+                              padding: "2px 4px",
+                              transition: "background-color 0.2s ease",
                             }}
-                          />
-                          <span
-                            style={{
-                              fontWeight: isHovered ? "bold" : "normal",
-                              color: isHovered ? "#222" : "inherit",
-                            }}
+                            onMouseEnter={() => setHoveredKey(key)}
+                            onMouseLeave={() => setHoveredKey(null)}
                           >
-                            {key}
-                          </span>
-                        </div>
-                      );
-                    })}
+                            <div
+                              style={{
+                                width: 14,
+                                height: 14,
+                                backgroundColor: fargeMap[key],
+                                flexShrink: 0,
+                                border: isHovered ? "2px solid black" : "none",
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontWeight: isHovered ? "bold" : "normal",
+                                color: isHovered ? "#222" : "inherit",
+                              }}
+                            >
+                              {key}
+                            </span>
+                          </div>
+                        );
+                      })}
+                  </div>
                 </div>
-              </div>
+              </Box>
             </div>
           )}
         </div>
