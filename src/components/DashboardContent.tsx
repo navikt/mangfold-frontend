@@ -55,7 +55,7 @@ export default function DashboardContent() {
           male={malePercentage}
           mode="prosent"
         />
-
+        
         <GenderIconCard
           title="Kjønnsfordelingen totalt (antall)"
           female={femaleCount}

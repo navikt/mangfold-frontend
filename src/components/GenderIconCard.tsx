@@ -1,4 +1,4 @@
-import { Label } from "@navikt/ds-react";
+import { Heading, BodyShort } from "@navikt/ds-react";
 import { FaFemale, FaMale } from "react-icons/fa";
 import { getKjonnFarger } from "../utils/kjonnFarger";
 import "../css/GenderIconCard.css";
@@ -22,19 +22,22 @@ export default function GenderIconCard({
 }: GenderIconCardProps) {
   return (
     <div className="gender-icon-card">
-      <Label className="card-title">{title}</Label>
+      <Heading size="medium" spacing className="card-title">
+        {title}
+      </Heading>
+
       <div className="gender-figures">
         <div className="gender-icon-block">
-          <FaFemale title="Kvinne" size={32} color={kjonnFarger.get("female")} />
-          <span className="gender-value">
+          <FaFemale title="Kvinne" size={60} color={kjonnFarger.get("female")} />
+          <BodyShort size="large" style={{ fontWeight: "bold"}} className="gender-value">
             {mode === "prosent" ? `${female}%` : `${female} personer`}
-          </span>
+          </BodyShort>
         </div>
         <div className="gender-icon-block">
-          <FaMale title="Mann" size={32} color={kjonnFarger.get("male")} />
-          <span className="gender-value">
+          <FaMale title="Mann" size={60} color={kjonnFarger.get("male")} />
+          <BodyShort size="large" style={{ fontWeight: "bold" }} className="gender-value">
             {mode === "prosent" ? `${male}%` : `${male} personer`}
-          </span>
+          </BodyShort>
         </div>
       </div>
     </div>
