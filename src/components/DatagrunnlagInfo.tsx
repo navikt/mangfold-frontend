@@ -1,4 +1,4 @@
-import { Heading, BodyShort, BodyLong } from "@navikt/ds-react";
+import { Heading, BodyShort, BodyLong, Link } from "@navikt/ds-react";
 import { useMetaData } from "../data/useMetaData";
 import {
   CalendarIcon,
@@ -258,16 +258,7 @@ export default function DatagrunnlagInfo() {
             Kontakt
           </Heading>
           <BodyLong>
-            Prosjektet er organisert under team heda. Se Slack-kanalen{" "}
-            <a
-              href="https://nav-it.slack.com/archives/C08TXNNMBAT"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ wordBreak: "break-all" }}
-            >
-              #sommerstudent-prosjekt-mangfold
-            </a>{" "}
-            for mer informasjon om prosjektet og videre organisering. Se også #team-heda.
+            Prosjektet er organisert under team heda. Se Slack-kanalen <Link href="https://nav-it.slack.com/archives/C08TXNNMBAT">#sommerstudent-prosjekt-mangfold </Link> for mer informasjon om prosjektet og videre organisering. Se også <Link href="https://nav-it.slack.com/archives/C06DFM3MJLB">#team-heda</Link>.
           </BodyLong>
         </div>
       </div>
