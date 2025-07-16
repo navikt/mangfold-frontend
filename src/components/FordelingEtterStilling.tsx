@@ -5,7 +5,9 @@ import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
 import { useAlderPerStilling } from "../data/useAlderPerStilling";
 import { getAlderFarger } from "../utils/alderFarger";
 import { getKjonnFarger } from "../utils/kjonnFarger";
-import "../css/KjonnPerSeksjonChart.css";
+//import { CustomizedAxisTick } from "./FordelingEtterAvdeling";
+
+
 
 type ViewType = "kjonn" | "alder";
 
@@ -147,6 +149,33 @@ function LegendBar({
         </span>
       ))}
     </div>
+  );
+}
+
+function CustomizedAxisTick({ x, y, payload, visibleTicksCount = 0 }: any) {
+  const angle = visibleTicksCount > 6 ? -48 : 0;
+  const anchor = visibleTicksCount > 6 ? "end" : "middle";
+  const fontSize = visibleTicksCount > 10 ? 10 : visibleTicksCount > 6 ? 12 : 14;
+  const dy = 10;
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={dy}
+        textAnchor={anchor}
+        transform={`rotate(${angle})`}
+        fontSize={fontSize}
+        fill="#262626"
+        style={{
+          fontFamily: "Arial, sans-serif",
+          fontWeight: 400,
+        }}
+      >
+        {`${payload.value}%`}
+      </text>
+    </g>
   );
 }
 
@@ -302,8 +331,9 @@ export default function FordelingEtterStilling() {
 
       <ResponsiveContainer width="100%" height={sortedData.length * barHeight + 60}>
         <BarChart layout="vertical" data={sortedData} margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }} barCategoryGap={12} barSize={barHeight}>
-          <XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
-          <YAxis type="category" dataKey="section" width={yAxisWidth} tick={{ fontSize: 17, fontWeight: 500, fill: "#000000" }} />
+          <XAxis type="number" domain={[0, 100]} tick={<CustomizedAxisTick visibleTicksCount={sortedData.length} />} />
+          <YAxis type="category" dataKey="section" width={300} />
+
           <Tooltip content={(props) => (
             <CustomTooltip
               {...props}

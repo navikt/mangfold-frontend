@@ -5,8 +5,8 @@ import { useKjonnData } from "../data/useKjonnData";
 import { useAlderData } from "../data/useAlderData";
 import { getAlderFarger } from "../utils/alderFarger";
 import { getKjonnFarger } from "../utils/kjonnFarger";
-import "../css/KjonnPerSeksjonChart.css";
 import { VStack, Chips, ToggleGroup } from "@navikt/ds-react";
+import "../css/KjonnPerSeksjonChart.css";
 
 type ViewType = "kjonn" | "alder";
 
@@ -284,25 +284,33 @@ export default function FordelingEtterAvdeling() {
   const hasMasked = useMemo(() => {
     return sortedData.some(entry => entry.isMasked);
   }, [sortedData]);
+  
+  function CustomizedAxisTick({ x, y, payload, visibleTicksCount = 0 }: any) {
+    const angle = visibleTicksCount > 6 ? -48 : 0;
+    const anchor = visibleTicksCount > 6 ? "end" : "middle";
+    const fontSize = visibleTicksCount > 10 ? 10 : visibleTicksCount > 6 ? 12 : 14;
+    const dy = 10;
 
-  function CustomYAxisTick({ x, y, payload }: any) {
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={-5}
-        y={0}
-        dy={5}
-        textAnchor="end"
-        fontSize={17}
-        fontWeight={500}
-        fill="#000000"
-        style={{ whiteSpace: "nowrap" }}
-      >
-        {payload.value}
-      </text>
-    </g>
-  );
-}
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={dy}
+          textAnchor={anchor}
+          transform={`rotate(${angle})`}
+          fontSize={fontSize}
+          fill="#262626"
+          style={{
+            fontFamily: "Arial, sans-serif",
+            fontWeight: 400,
+          }}
+        >
+          {`${payload.value}%`}
+        </text>
+      </g>
+    );
+  }
 
   return (
     <div>
@@ -354,22 +362,25 @@ export default function FordelingEtterAvdeling() {
           hasMasked={hasMasked}
         />
       }
-
-      <ResponsiveContainer width="100%" height={sortedData.length * barHeight + 60}>
+      <ResponsiveContainer width="100%" height={sortedData.length * barHeight + 60} >
         <BarChart
           layout="vertical"
           data={sortedData}
           margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }}
           barSize={barHeight}
         >
+          <XAxis
+            type="number"
+            domain={[0, 100]}
+            tick={<CustomizedAxisTick visibleTicksCount={sortedData.length} />}
+          />
 
-          <XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
           <YAxis
-  type="category"
-  dataKey="section"
-  width={300} // Øk hvis teksten fortsatt kuttes
-  tick={<CustomYAxisTick />}
-/>
+            type="category"
+            dataKey="section"
+            width={300}
+          />
+
           <Tooltip content={(props) => (
             <CustomTooltip
               {...props}
@@ -379,6 +390,7 @@ export default function FordelingEtterAvdeling() {
               kjonnFarger={kjonnFarger}
             />
           )} />
+
           <Bar dataKey="masked" stackId="a" fill={kjonnFarger.get("masked")} isAnimationActive={false} label={false} stroke="#ffffff" strokeWidth={2} />
           {view === "kjonn" ? (
             <>
