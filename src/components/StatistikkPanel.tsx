@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heading, Button, BodyShort } from "@navikt/ds-react";
+import { Heading, Button, BodyShort} from "@navikt/ds-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -13,6 +13,8 @@ import { CustomizedAxisTick } from "./CustomizedAxisTick";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { getKjonnFarger } from "../utils/kjonnFarger";
+
+
 
 type ApiAvdeling = {
   gruppe: string;
@@ -257,6 +259,7 @@ export default function StatistikkPanel() {
               <XAxis
                 dataKey="label"
                 interval={0}
+                
                 tick={<CustomizedAxisTick />}
               />
               <YAxis tickFormatter={(value) => `${value}%`} domain={[0, 100]} />
