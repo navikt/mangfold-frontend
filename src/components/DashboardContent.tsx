@@ -31,20 +31,20 @@ export default function DashboardContent() {
 
   return (
     <section className="dashboard-body">
-      <Heading level="2" size="medium" spacing>
+      <Heading size="xlarge" spacing>
         Mangfold og likestilling i Arbeids- og velferdsdirektoratet
       </Heading>
 
-      <BodyShort spacing>
+      <BodyShort size="large" spacing>
         Nav har en forpliktelse til å jobbe for mangfold og likestilling for ansatte i etaten. Dette dashboardet er tiltenkt som et verktøy for å
         spre bevissthet om mangfoldet innad i direktoratet og samtidig gi innsikt til videre arbeid med inkludering og representasjon.
       </BodyShort>
 
-      <BodyShort spacing>
+      <BodyShort size="large" spacing>
         Visualiseringene og fordelingene er basert på den enkeltes ansettelsesforhold.
       </BodyShort>
 
-      <BodyShort spacing>
+      <BodyShort size="large" spacing>
         Her ser du noen utvalgte nøkkelvisninger. Du kan konstruere dine egne visualiseringer under fanen "Utforsk".
       </BodyShort>
 
@@ -73,18 +73,8 @@ export default function DashboardContent() {
       >
         <StatistikkPanel />
       </Box>
-      {/* 
-      <Box
-        padding="6"
-        marginBlock="6"
-        borderRadius="large"
-        background-color="subtle"
-        shadow="medium"
-      >
-        <StatistikkExplorer />
-      </Box> */}
-      <StatistikkExplorer />
 
+      <StatistikkExplorer />
     </section>
   );
 }

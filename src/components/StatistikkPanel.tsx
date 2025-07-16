@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heading, Button } from "@navikt/ds-react";
+import { Heading, Button, BodyShort } from "@navikt/ds-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -177,14 +177,14 @@ export default function StatistikkPanel() {
 
   return (
     <div className="chart-toggle-wrapper">
-      <Heading level="3" size="small" spacing>
+      <Heading size="large" spacing>
         Oversikt over kvinner og menn i hver avdeling – {yearRange[0]}
       </Heading>
 
-      <p>
+      <BodyShort size="medium" spacing>
         Her kan du se kjønnsfordelingen i hver avdeling basert på data fra inneværende år. Oversikten viser hvor mange kvinner
         og menn som jobber i hver avdeling. Hold musen over en avdeling for å se detaljer om kjønnsfordelingen.
-      </p>
+      </BodyShort>
 
       <div style={{
         display: 'flex',

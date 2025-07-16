@@ -1,12 +1,9 @@
-// import { oppsigelseData } from "../data/OppsigelseData";
-// import StatistikkSideLayout from "./StatistikkSideLayout";
-
-// export default function Oppsigelse() {
-//     return (
-//         <StatistikkSideLayout
-//             title="Oppsigelser"
-//             data={oppsigelseData}
-//             variant="oppsigelse"
-//         />
-//     );
-// }
+export default function Nyrekruttering() {
+  return (
+    <section style={{ padding: "2rem", textAlign: "center" }}>
+      <p style={{ fontStyle: "italic", color: "#666" }}>
+        Ingen data tilgjengelig for nyrekruttering enda.
+      </p>
+    </section>
+  );
+}

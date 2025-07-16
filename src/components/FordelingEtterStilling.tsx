@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Heading, ToggleGroup } from "@navikt/ds-react";
+import { BodyShort, Heading, ToggleGroup } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useKjonnPerStilling } from "../data/useKjonnPerStilling";
 import { useAlderPerStilling } from "../data/useAlderPerStilling";
@@ -263,16 +263,18 @@ export default function FordelingEtterStilling() {
     return sortedData.some(entry => entry.isMasked);
   }, [sortedData]);
 
-  
+
 
   return (
     <div>
-      <Heading level="2" size="medium" spacing>
-        Kjønns- og aldersfordeling per stilling.
+      <Heading size="large" spacing>
+        Kjønns- og aldersfordeling per stilling
       </Heading>
-      <p style={{ marginBottom: "1.5rem" }}>
+
+      <BodyShort size="medium" spacing style={{ marginBottom: "1.5rem" }}>
         Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per stilling. Hold musen over en stilling for å se detaljer om fordelingen.
-      </p>
+      </BodyShort>
+
       <div className="visningstype-toggle">
         <ToggleGroup
           size="medium"

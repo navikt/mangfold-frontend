@@ -412,28 +412,24 @@ const visibleSum = Object.entries(map[g])
 
   return (
     <div>
-      <div style={{ marginBottom: "2rem", marginTop: "1rem" }}>
+      <div >
         <GuidePanel poster>
-          <Heading level="2" size="small">Om denne visningen</Heading>
-          <BodyLong spacing>
+          <Heading size="medium">Om denne visningen</Heading>
+          <BodyLong size="medium">
             Her kan du selv filtrere og sammenligne data på tvers av avdelinger og seksjoner. Du kan vise fordeling på gruppene kjønn, alder, ansiennitet, ledernivå og stilling.
           </BodyLong>
-          <BodyLong spacing>
+          <BodyLong size="medium" >
             Du kan bruke filtrene til venstre for å skreddersy visningen, og for eksempel sammenligne hvordan kjønnsfordelingen varierer mellom seksjoner,
             eller hvordan ansiennitet fordeler seg på tvers av stillinger.
           </BodyLong>
-          <BodyLong spacing>
+          <BodyLong size="medium" >
             Når du beveger musen over grafene, får du opp detaljerte tall.
           </BodyLong>
-          <BodyLong>
+          <BodyLong size="medium" >
             Du kan velge flere kombinasjoner samtidig for å analysere mer komplekse mønstre. Obs: Velger du for mange filtre kan grafen bli uoversiktlig. Grupperinger som er for små blir ikke vist av personvernshensyn.
           </BodyLong>
         </GuidePanel>
       </div>
-
-      {/* {!loading && selectedDepartments.length === 0 && (
-        <p style={{ marginBottom: "2rem" }}>Vennligst velg én avdeling for å se statistikk.</p>
-      )} */}
 
       <div style={{ display: "flex", gap: "3rem", alignItems: "flex-start", paddingTop: "1.5rem" }}>
         <div style={{ minWidth: "320px", maxWidth: "420px", padding: "1rem 0" }}>

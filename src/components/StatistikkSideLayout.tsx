@@ -1,7 +1,7 @@
 // import { useState } from "react";
 // import { Button, Tooltip } from "@navikt/ds-react";
 // import SingleYearFilter from "./SingleYearFilter";
-// // import type { StatCategory, StatEntry } from "../data/NyrekrutteringData";
+// import type { StatCategory, StatEntry } from "../data/NyrekrutteringData";
 // import ChartTableView from "./ChartTableView";
 // import StatBarChart from "./StatBarChart";
 // import GenderIconCard from "./GenderIconCard";
@@ -161,7 +161,7 @@
 //           <ChartTableView
 //             showTable={true}
 //             aggregatedData={filteredData}
-//             // year={[selectedYear, selectedYear]}
+//             year={[selectedYear, selectedYear]}
 //           />
 //         ) : (
 //           <StatBarChart data={filteredData} />

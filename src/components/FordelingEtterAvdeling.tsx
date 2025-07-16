@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Heading } from "@navikt/ds-react";
+import { BodyShort, Heading } from "@navikt/ds-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useKjonnData } from "../data/useKjonnData";
 import { useAlderData } from "../data/useAlderData";
@@ -253,7 +253,7 @@ export default function FordelingEtterAvdeling() {
         grupper.forEach((gruppe: string) => {
           tall[gruppe] = entry.alderGrupper[gruppe] ?? 0;
         });
-        
+
         const fordelt = fordelProsentverdier(grupper, tall);
         const percentObj: Record<string, number> = {};
         const countObj: Record<string, number> = {};
@@ -285,12 +285,33 @@ export default function FordelingEtterAvdeling() {
     return sortedData.some(entry => entry.isMasked);
   }, [sortedData]);
 
+  function CustomYAxisTick({ x, y, payload }: any) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={-5}
+        y={0}
+        dy={5}
+        textAnchor="end"
+        fontSize={17}
+        fontWeight={500}
+        fill="#000000"
+        style={{ whiteSpace: "nowrap" }}
+      >
+        {payload.value}
+      </text>
+    </g>
+  );
+}
+
   return (
     <div>
-      <Heading level="2" size="medium" spacing>
+      <Heading size="large" spacing>
         Kjønns- og aldersfordeling per seksjon
       </Heading>
-      <p style={{ marginBottom: "1.5rem" }}>Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling. Hold musen over en seksjon for å se detaljer om fordelingen.</p>
+      <BodyShort size="medium" spacing style={{ marginBottom: "1.5rem" }}>
+        Her ser du {view === "kjonn" ? "kjønnsfordelingen" : "aldersfordelingen"} per seksjon i valgt avdeling. Hold musen over en seksjon for å se detaljer om fordelingen.
+      </BodyShort>
       <ToggleGroup
         size="medium"
         value={view}
@@ -339,11 +360,16 @@ export default function FordelingEtterAvdeling() {
           layout="vertical"
           data={sortedData}
           margin={{ top: 20, right: 60, bottom: 20, left: yAxisWidth }}
-          barSize={barHeight}        
-          >
+          barSize={barHeight}
+        >
 
           <XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
-          <YAxis type="category" dataKey="section" width={yAxisWidth} tick={{ fontSize: 17, fontWeight: 500, fill: "#000000" }} />
+          <YAxis
+  type="category"
+  dataKey="section"
+  width={300} // Øk hvis teksten fortsatt kuttes
+  tick={<CustomYAxisTick />}
+/>
           <Tooltip content={(props) => (
             <CustomTooltip
               {...props}
@@ -370,7 +396,7 @@ export default function FordelingEtterAvdeling() {
                 dataKey={`percent_${gruppe}`}
                 stackId="a"
                 fill={alderFarger.get(gruppe)}
-                stroke="#ffffff" 
+                stroke="#ffffff"
                 strokeWidth={2}
               />
             ))

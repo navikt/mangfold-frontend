@@ -3,12 +3,15 @@ import { useMetaData } from "../data/useMetaData";
 import DashboardContent from "../components/DashboardContent";
 import DatagrunnlagInfo from "../components/DatagrunnlagInfo";
 import StatistikkExplorerTab from "../components/StatistikkExplorerTab";
-// import Nyrekruttering from "../components/Nyrekruttering";
-// import Oppsigelse from "../components/Oppsigelse"; // fjernet siden vi ikke viser den
+import Nyrekruttering from "../components/Nyrekruttering";
+import Oppsigelse from "../components/Oppsigelse";
+import { Tooltip } from "@navikt/ds-react";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<"hoved" | "Utforsk" | "data">("hoved");
+  type TabType = "hoved" | "Utforsk" | "data" | "nyrekruttering" | "oppsigelse";
+  const [activeTab, setActiveTab] = useState<TabType>("hoved");
   const { lastUpdated } = useMetaData();
+
 
   const navLinkStyle = (tab: string) => ({
     color: activeTab === tab ? "#0056b4" : "#333",
@@ -21,7 +24,6 @@ export default function Dashboard() {
 
   return (
     <main>
-      {/* Subnavigation */}
       <nav
         style={{
           backgroundColor: "#ffffff",
@@ -42,52 +44,41 @@ export default function Dashboard() {
           <span onClick={() => setActiveTab("Utforsk")} style={navLinkStyle("Utforsk")}>
             Utforsk
           </span>
+          
+          <Tooltip content="Ingen data tilgjengelig enda">
+            <span style={navLinkStyle("nyrekruttering")}>
+              Nyrekruttering
+            </span>
+          </Tooltip>
+
+          <Tooltip content="Ingen data tilgjengelig enda">
+            <span style={navLinkStyle("oppsigelse")}>
+              Oppsigelse
+            </span>
+          </Tooltip>
+
           <span onClick={() => setActiveTab("data")} style={navLinkStyle("data")}>
             Om data
           </span>
-
-          {/* <Button
-            variant={activeTab === "nyrekruttering" ? "primary" : "secondary"}
-            onClick={() => setActiveTab("nyrekruttering")}
-          >
-            Nyrekruttering
-          </Button> */}
-
-          { <Tooltip content="Visualiseringer for nyrekruttering er ikke tilgjengelige fordi historiske data mangler.">
-            <span>
-              <Button variant="secondary" disabled>
-                Nyrekruttering
-              </Button>
-            </span>
-          </Tooltip> }
-
-          { <Tooltip content="Visualiseringer for oppsigelse er ikke tilgjengelige fordi historiske data mangler.">
-            <span>
-              <Button variant="secondary" disabled>
-                Oppsigelse
-              </Button>
-            </span>
-          </Tooltip> }
         </div>
 
         {lastUpdated && (
-          <span style={{ 
-            fontSize: "0.9rem", 
-            color: "#666", 
-            fontWeight: "normal" 
+          <span style={{
+            fontSize: "0.9rem",
+            color: "#666",
+            fontWeight: "normal"
           }}>
             Sist oppdatert: {lastUpdated}
           </span>
         )}
       </nav>
 
-      {/* Innholdet */}
       <div style={{ padding: "2rem" }}>
         {activeTab === "hoved" && <DashboardContent />}
         {activeTab === "Utforsk" && <StatistikkExplorerTab />}
         {activeTab === "data" && <DatagrunnlagInfo />}
-        {/* {activeTab === "nyrekruttering" && <Nyrekruttering />} */}
-        {/* {activeTab === "oppsigelse" && <Oppsigelse />} */}
+        {activeTab === "nyrekruttering" && <Nyrekruttering />}
+        {activeTab === "oppsigelse" && <Oppsigelse />}
       </div>
     </main>
   );
