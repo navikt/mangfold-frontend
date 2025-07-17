@@ -8,8 +8,12 @@ metadata:
 spec:       
   port: 3000                    
   ingresses:
-    - https://mangfold.intern.dev.nav.no
-    - https://mangfold.ansatt.dev.nav.no
+    # dev
+    #- https://mangfold.intern.dev.nav.no
+    #- https://mangfold.ansatt.dev.nav.no
+    # prod
+    - https://mangfold.intern.nav.no
+    - https://mangfold.ansatt.nav.no
   replicas:
     min: 1
     max: 2
