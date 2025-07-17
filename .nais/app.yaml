@@ -15,8 +15,8 @@ spec:
     max: 2
   resources:
     requests:
-      cpu: 22m
-      memory: 160Mi
+      cpu: 12m
+      memory: 128Mi
     limits:
       memory: 255Mi
   accessPolicy:
